@@ -1,0 +1,15 @@
+{
+  "errors": {
+    "common": {
+      "NOT_FOUND": "Resource not found",
+      "INTERNAL_ERROR": "An unexpected error occurred"
+    },
+    "auth": {
+      "UNAUTHORIZED": "Authentication required",
+      "FORBIDDEN": "Access denied"
+    },
+    "validation": {
+      "FAILED": "Provided data failed validation"
+    }
+  }
+}

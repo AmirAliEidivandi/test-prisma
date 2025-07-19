@@ -1,0 +1,15 @@
+{
+  "errors": {
+    "common": {
+      "NOT_FOUND": "موردی یافت نشد",
+      "INTERNAL_ERROR": "خطای غیرمنتظره ای رخ داد"
+    },
+    "auth": {
+      "UNAUTHORIZED": "دسترسی غیرمجاز",
+      "FORBIDDEN": "اجازه دسترسی ندارید"
+    },
+    "validation": {
+      "FAILED": "اطلاعات ارسال شده نامعتبر است"
+    }
+  }
+}

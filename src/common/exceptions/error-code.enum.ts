@@ -1,0 +1,7 @@
+export enum ErrorCode {
+  COMMON_NOT_FOUND = 'common.NOT_FOUND',
+  COMMON_INTERNAL_ERROR = 'common.INTERNAL_ERROR',
+  AUTH_UNAUTHORIZED = 'auth.UNAUTHORIZED',
+  AUTH_FORBIDDEN = 'auth.FORBIDDEN',
+  VALIDATION_FAILED = 'validation.FAILED',
+}
