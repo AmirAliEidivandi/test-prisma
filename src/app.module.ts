@@ -7,6 +7,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ProductsModule } from '@products/products.module';
+import { PrismaModule } from '@services/prisma/prisma.module';
 import { SharedModule } from '@shared/shared.module';
 import {
   AuthGuard,
@@ -55,6 +57,7 @@ import { AppService } from './app.service';
           __dirname,
           '../src/generated/i18n.generated.ts',
         ),
+        useTypesOutputPath: true,
       }),
       resolvers: [
         { use: QueryResolver, options: ['lang'] },
@@ -67,9 +70,11 @@ import { AppService } from './app.service';
       inject: [ConfigService],
       imports: [KeycloakConfigModule, ConfigModule],
     }),
+    PrismaModule,
     TerminusModule,
     HttpModule,
     SharedModule,
+    ProductsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

@@ -22,7 +22,7 @@
       "@constants/*": ["src/common/constants/*"],
       "@decorators/*": ["src/common/decorators/*"],
       "@dto/*": ["src/common/dto/*"],
-      "@enum/*": ["src/common/enum/*"],
+      "@enum/*": ["src/common/enums/*"],
       "@filter/*": ["src/common/filter/*"],
       "@health/*": ["src/health/*"],
       "@helper/*": ["src/common/helper/*"],
@@ -31,7 +31,8 @@
       "@services/*": ["src/common/services/*"],
       "@shared/*": ["src/shared/*"],
       "@utils/*": ["src/common/utils/*"],
-      "@exceptions/*": ["src/common/exceptions/*"]
+      "@exceptions/*": ["src/common/exceptions/*"],
+      "@products/*": ["src/v1/products/*"]
     }
   }
 }
