@@ -94,10 +94,21 @@ async function bootstrap() {
         return new HttpException(
           {
             message: 'Validation failed',
-            errors: errors.map((error) => ({
-              field: error.property,
-              constraints: error.constraints,
-            })),
+            errors: errors.map((error) => {
+              const field = error.property;
+              const constraints = error.constraints;
+              const value = error.value;
+
+              // Create more descriptive error messages
+              const errorDetails = {
+                field,
+                value,
+                constraints,
+                messages: Object.values(constraints || {}),
+              };
+
+              return errorDetails;
+            }),
           },
           HttpStatus.BAD_REQUEST,
         );

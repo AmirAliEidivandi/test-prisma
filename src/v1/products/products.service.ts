@@ -10,6 +10,15 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto) {
     const product = await this.prisma.product.create({
       data: createProductDto,
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
     });
     return product;
   }
@@ -23,6 +32,15 @@ export class ProductsService {
       },
       skip: page * limit,
       take: limit,
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
     });
     return products;
   }

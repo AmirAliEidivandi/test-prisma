@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
 import { ProductStatus } from '../enums/product-status.enum';
 
 export class CreateProductDto {
@@ -11,7 +11,7 @@ export class CreateProductDto {
   price: number;
 
   @IsNotEmpty()
-  @IsString()
+  @IsUUID()
   userId: string;
 
   @IsNotEmpty()

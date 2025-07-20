@@ -27,6 +27,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     let code: ErrorCode = ErrorCode.COMMON_INTERNAL_ERROR;
     let payload: Record<string, any> | undefined;
     let hasCustomErrorCode = false;
+    let validationErrors: any[] = [];
 
     if (exception instanceof HttpException) {
       const res = exception.getResponse();
@@ -38,6 +39,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         payload = { message: res };
       } else if (typeof res === 'object') {
         payload = res as Record<string, any>;
+        // Check if this is a validation error with detailed errors
+        if ((res as any).errors && Array.isArray((res as any).errors)) {
+          validationErrors = (res as any).errors;
+        }
       }
     }
 
@@ -75,6 +80,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       path: request.url,
       method: request.method,
       message,
+      // Include validation errors if they exist
+      ...(validationErrors.length > 0 && { validationErrors }),
     };
 
     response.status(status).send(errorResponse);
