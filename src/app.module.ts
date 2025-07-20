@@ -4,17 +4,13 @@ import { HealthController } from '@health/health.controller';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ProductsModule } from '@products/products.module';
 import { PrismaModule } from '@services/prisma/prisma.module';
 import { SharedModule } from '@shared/shared.module';
-import {
-  AuthGuard,
-  KeycloakConnectModule,
-  RoleGuard,
-} from 'nest-keycloak-connect';
+import { KeycloakConnectModule } from 'nest-keycloak-connect';
 import {
   AcceptLanguageResolver,
   HeaderResolver,
@@ -24,6 +20,7 @@ import {
 import * as path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EnhancedExceptionFilter } from './common/filter/enhanced-exception.filter';
 
 @Module({
   imports: [
@@ -80,8 +77,9 @@ import { AppService } from './app.service';
   providers: [
     AppService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
-    { provide: APP_GUARD, useClass: AuthGuard },
-    { provide: APP_GUARD, useClass: RoleGuard },
+    { provide: APP_FILTER, useClass: EnhancedExceptionFilter },
+    // { provide: APP_GUARD, useClass: AuthGuard },
+    // { provide: APP_GUARD, useClass: RoleGuard },
   ],
 })
 export class AppModule {}

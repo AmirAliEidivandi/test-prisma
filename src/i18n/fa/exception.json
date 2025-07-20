@@ -2,14 +2,31 @@
   "errors": {
     "common": {
       "NOT_FOUND": "موردی یافت نشد",
-      "INTERNAL_ERROR": "خطای غیرمنتظره ای رخ داد"
+      "INTERNAL_ERROR": "خطای غیرمنتظره ای رخ داد",
+      "BAD_REQUEST": "درخواست نامعتبر",
+      "FORBIDDEN": "دسترسی ممنوع",
+      "CONFLICT": "تداخل منبع"
     },
     "auth": {
       "UNAUTHORIZED": "دسترسی غیرمجاز",
-      "FORBIDDEN": "اجازه دسترسی ندارید"
+      "FORBIDDEN": "اجازه دسترسی ندارید",
+      "TOKEN_EXPIRED": "توکن منقضی شده است",
+      "TOKEN_INVALID": "توکن نامعتبر است",
+      "CREDENTIALS_INVALID": "اعتبارنامه های نامعتبر"
     },
     "validation": {
-      "FAILED": "اطلاعات ارسال شده نامعتبر است"
+      "FAILED": "اطلاعات ارسال شده نامعتبر است",
+      "REQUIRED_FIELD": "فیلد الزامی: {{field}}",
+      "INVALID_FORMAT": "فرمت نامعتبر برای {{field}}، فرمت مورد انتظار: {{expectedFormat}}",
+      "OUT_OF_RANGE": "مقدار {{field}} خارج از محدوده است ({{min}} - {{max}})",
+      "DUPLICATE_VALUE": "مقدار تکراری برای {{field}}: {{value}}"
+    },
+    "product": {
+      "NOT_FOUND": "محصول یافت نشد",
+      "ALREADY_EXISTS": "محصولی با نام '{{name}}' از قبل موجود است",
+      "INVALID_STATUS": "وضعیت محصول نامعتبر: {{status}}",
+      "INSUFFICIENT_STOCK": "موجودی کافی نیست. درخواست شده: {{requestedQuantity}}، موجود: {{availableQuantity}}",
+      "PRICE_INVALID": "قیمت نامعتبر: {{price}}"
     }
   }
 }

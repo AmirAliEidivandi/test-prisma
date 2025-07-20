@@ -3,14 +3,14 @@ import { ProductStatus } from '../enums/product-status.enum';
 
 export class UpdateProductDto {
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'validation.constraints.isString' })
   name?: string;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'validation.constraints.isNumber' })
   price?: number;
 
   @IsOptional()
-  @IsEnum(ProductStatus)
+  @IsEnum(ProductStatus, { message: 'validation.constraints.isEnum' })
   status?: ProductStatus;
 }

@@ -1,10 +1,4 @@
-import { HttpExceptionFilter } from '@filter/http-exception.filter';
-import {
-  HttpException,
-  HttpStatus,
-  ValidationPipe,
-  VersioningType,
-} from '@nestjs/common';
+import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import {
@@ -16,13 +10,21 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { I18nService } from 'nestjs-i18n';
 import { AppModule } from './app.module';
+import { EnhancedExceptionFilter } from './common/filter/enhanced-exception.filter';
+import { LanguageInterceptor } from './common/interceptors/language.interceptor';
+import { EnhancedValidationPipe } from './common/pipes/enhanced-validation.pipe';
+import { registerValidationEnums } from './common/utils/validation-enums';
 
 async function bootstrap() {
+  // Register enum values for validation messages
+  registerValidationEnums();
+
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
   );
   const configService = app.get(ConfigService);
+  const i18nService = app.get(I18nService);
 
   // app.connectMicroservice<MicroserviceOptions>({
   //   transport: Transport.KAFKA,
@@ -84,37 +86,11 @@ async function bootstrap() {
     origin: configService.get<string>('ORIGIN').split(' '),
     credentials: true,
   });
-  app.useGlobalFilters(new HttpExceptionFilter(app.get(I18nService)));
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      exceptionFactory: (errors) => {
-        return new HttpException(
-          {
-            message: 'Validation failed',
-            errors: errors.map((error) => {
-              const field = error.property;
-              const constraints = error.constraints;
-              const value = error.value;
+  app.useGlobalInterceptors(new LanguageInterceptor());
+  app.useGlobalFilters(new EnhancedExceptionFilter(app.get(I18nService)));
 
-              // Create more descriptive error messages
-              const errorDetails = {
-                field,
-                value,
-                constraints,
-                messages: Object.values(constraints || {}),
-              };
-
-              return errorDetails;
-            }),
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      },
-    }),
-  );
+  // Create enhanced validation pipe with i18n support
+  app.useGlobalPipes(new EnhancedValidationPipe(i18nService as any));
   const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
 }

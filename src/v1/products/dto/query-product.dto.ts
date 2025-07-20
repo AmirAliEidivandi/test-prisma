@@ -4,22 +4,22 @@ import { ProductStatus } from '../enums/product-status.enum';
 
 export class QueryProductDto {
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'validation.constraints.isString' })
   search?: string;
 
   @IsOptional()
-  @IsEnum(ProductStatus)
+  @IsEnum(ProductStatus, { message: 'validation.constraints.isEnum' })
   status?: ProductStatus;
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(0)
+  @IsInt({ message: 'validation.constraints.isInt' })
+  @Min(0, { message: 'validation.constraints.min' })
   page?: number = 0;
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'validation.constraints.isInt' })
+  @Min(1, { message: 'validation.constraints.min' })
   limit?: number = 10;
 }

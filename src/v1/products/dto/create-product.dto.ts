@@ -1,20 +1,26 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { ProductStatus } from '../enums/product-status.enum';
 
 export class CreateProductDto {
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
+  @IsString({ message: 'validation.constraints.isString' })
   name: string;
 
-  @IsNotEmpty()
-  @IsNumber()
+  @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
+  @IsNumber({}, { message: 'validation.constraints.isNumber' })
   price: number;
 
-  @IsNotEmpty()
-  @IsUUID()
+  @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
+  @IsUUID(4, { message: 'validation.constraints.isUUID' })
   userId: string;
 
-  @IsNotEmpty()
-  @IsEnum(ProductStatus)
+  @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
+  @IsEnum(ProductStatus, { message: 'validation.constraints.isEnum' })
   status: ProductStatus;
 }

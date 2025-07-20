@@ -2,14 +2,31 @@
   "errors": {
     "common": {
       "NOT_FOUND": "Resource not found",
-      "INTERNAL_ERROR": "An unexpected error occurred"
+      "INTERNAL_ERROR": "An unexpected error occurred",
+      "BAD_REQUEST": "Bad request",
+      "FORBIDDEN": "Access forbidden",
+      "CONFLICT": "Resource conflict"
     },
     "auth": {
       "UNAUTHORIZED": "Authentication required",
-      "FORBIDDEN": "Access denied"
+      "FORBIDDEN": "Access denied",
+      "TOKEN_EXPIRED": "Token has expired",
+      "TOKEN_INVALID": "Invalid token",
+      "CREDENTIALS_INVALID": "Invalid credentials"
     },
     "validation": {
-      "FAILED": "Provided data failed validation"
+      "FAILED": "Provided data failed validation",
+      "REQUIRED_FIELD": "Required field: {{field}}",
+      "INVALID_FORMAT": "Invalid format for {{field}}, expected: {{expectedFormat}}",
+      "OUT_OF_RANGE": "Value for {{field}} is out of range ({{min}} - {{max}})",
+      "DUPLICATE_VALUE": "Duplicate value for {{field}}: {{value}}"
+    },
+    "product": {
+      "NOT_FOUND": "Product not found",
+      "ALREADY_EXISTS": "Product with name '{{name}}' already exists",
+      "INVALID_STATUS": "Invalid product status: {{status}}",
+      "INSUFFICIENT_STOCK": "Insufficient stock. Requested: {{requestedQuantity}}, Available: {{availableQuantity}}",
+      "PRICE_INVALID": "Invalid price: {{price}}"
     }
   }
 }

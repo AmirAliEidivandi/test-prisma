@@ -1,0 +1,34 @@
+{
+  "constraints": {
+    "isNotEmpty": "{{field}} الزامی است",
+    "isString": "{{field}} باید متن باشد",
+    "isNumber": "{{field}} باید عدد باشد",
+    "isUUID": "{{field}} باید یک UUID معتبر باشد",
+    "isEnum": "{{field}} باید یکی از مقادیر مجاز باشد: {{validValues}}",
+    "isInt": "{{field}} باید عدد صحیح باشد",
+    "min": "{{field}} باید حداقل {{min}} باشد",
+    "max": "{{field}} باید حداکثر {{max}} باشد",
+    "isEmail": "{{field}} باید آدرس ایمیل معتبر باشد",
+    "isPhoneNumber": "{{field}} باید شماره تلفن معتبر باشد",
+    "minLength": "{{field}} باید حداقل {{min}} کاراکتر باشد",
+    "maxLength": "{{field}} باید حداکثر {{max}} کاراکتر باشد",
+    "isDateString": "{{field}} باید تاریخ معتبر باشد",
+    "isBoolean": "{{field}} باید مقدار بولین باشد",
+    "isArray": "{{field}} باید آرایه باشد",
+    "arrayMinSize": "{{field}} باید حداقل {{min}} آیتم داشته باشد",
+    "arrayMaxSize": "{{field}} باید حداکثر {{max}} آیتم داشته باشد"
+  },
+  "fields": {
+    "name": "نام",
+    "price": "قیمت",
+    "userId": "شناسه کاربر",
+    "status": "وضعیت",
+    "email": "ایمیل",
+    "phone": "تلفن",
+    "description": "توضیحات",
+    "quantity": "تعداد",
+    "search": "عبارت جستجو",
+    "page": "شماره صفحه",
+    "limit": "تعداد آیتم در صفحه"
+  }
+}
