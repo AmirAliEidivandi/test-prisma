@@ -32,6 +32,7 @@
       "@shared/*": ["src/shared/*"],
       "@utils/*": ["src/common/utils/*"],
       "@exceptions/*": ["src/common/exceptions/*"],
+      "@responses/*": ["src/common/responses/*"],
       "@products/*": ["src/v1/products/*"]
     }
   }

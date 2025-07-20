@@ -1,0 +1,9 @@
+{
+  "product": {
+    "CREATED": "Product created successfully",
+    "UPDATED": "Product updated successfully",
+    "DELETED": "Product deleted successfully",
+    "RETRIEVED": "Product retrieved successfully",
+    "LISTED": "Products retrieved successfully"
+  }
+}
