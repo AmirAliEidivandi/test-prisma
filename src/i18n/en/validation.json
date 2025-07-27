@@ -19,16 +19,16 @@
     "arrayMaxSize": "{{field}} must contain at most {{max}} items"
   },
   "fields": {
-    "name": "Name",
-    "price": "Price",
-    "userId": "User ID",
-    "status": "Status",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "nationalCode": "National Code",
     "email": "Email",
-    "phone": "Phone",
-    "description": "Description",
-    "quantity": "Quantity",
+    "jobPosition": "Job Position",
     "search": "Search term",
     "page": "Page number",
-    "limit": "Items per page"
+    "limit": "Items per page",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "deletedAt": "Deleted At"
   }
 }

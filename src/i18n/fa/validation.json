@@ -19,16 +19,16 @@
     "arrayMaxSize": "{{field}} باید حداکثر {{max}} آیتم داشته باشد"
   },
   "fields": {
-    "name": "نام",
-    "price": "قیمت",
-    "userId": "شناسه کاربر",
-    "status": "وضعیت",
+    "firstName": "نام",
+    "lastName": "نام خانوادگی",
+    "nationalCode": "کد ملی",
     "email": "ایمیل",
-    "phone": "تلفن",
-    "description": "توضیحات",
-    "quantity": "تعداد",
+    "jobPosition": "سمت",
     "search": "عبارت جستجو",
     "page": "شماره صفحه",
-    "limit": "تعداد آیتم در صفحه"
+    "limit": "تعداد آیتم در صفحه",
+    "createdAt": "تاریخ ایجاد",
+    "updatedAt": "تاریخ بروزرسانی",
+    "deletedAt": "تاریخ حذف"
   }
 }

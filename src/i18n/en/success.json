@@ -5,5 +5,12 @@
     "DELETED": "Product deleted successfully",
     "RETRIEVED": "Product retrieved successfully",
     "LISTED": "Products retrieved successfully"
+  },
+  "user": {
+    "CREATED": "User created successfully",
+    "UPDATED": "User updated successfully",
+    "DELETED": "User deleted successfully",
+    "RETRIEVED": "User retrieved successfully",
+    "LISTED": "Users retrieved successfully"
   }
 }

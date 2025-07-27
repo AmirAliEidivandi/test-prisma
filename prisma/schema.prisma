@@ -31,13 +31,13 @@ model Product {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  firstName  String
-  lastName   String
-  email      String
-  password   String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  deleted_at DateTime?
-  products   Product[]
+  id               String       @id @default(uuid())
+  profileId        String?      @unique @map("profile_id")
+  jobPosition      String?      @map("job_position")
+  phone            String?      @map("phone")
+  address          String?      @map("address")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+  deletedAt        DateTime?    @map("deleted_at")
+  products         Product[]
 }

@@ -8,6 +8,7 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ProductsModule } from '@products/products.module';
+import { KafkaModule } from '@services/kafka/kafka.module';
 import { PrismaModule } from '@services/prisma/prisma.module';
 import { SharedModule } from '@shared/shared.module';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
@@ -21,6 +22,7 @@ import * as path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EnhancedExceptionFilter } from './common/filter/enhanced-exception.filter';
+import { UsersModule } from './v1/users/users.module';
 
 @Module({
   imports: [
@@ -68,10 +70,12 @@ import { EnhancedExceptionFilter } from './common/filter/enhanced-exception.filt
       imports: [KeycloakConfigModule, ConfigModule],
     }),
     PrismaModule,
+    KafkaModule,
     TerminusModule,
     HttpModule,
     SharedModule,
     ProductsModule,
+    UsersModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

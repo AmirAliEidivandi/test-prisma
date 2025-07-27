@@ -5,7 +5,8 @@
       "INTERNAL_ERROR": "An unexpected error occurred",
       "BAD_REQUEST": "Bad request",
       "FORBIDDEN": "Access forbidden",
-      "CONFLICT": "Resource conflict"
+      "CONFLICT": "Resource conflict",
+      "KAFKA_REQUEST_TIMEOUT": "Kafka request timeout"
     },
     "auth": {
       "UNAUTHORIZED": "Authentication required",
@@ -27,6 +28,12 @@
       "INVALID_STATUS": "Invalid product status: {{status}}",
       "INSUFFICIENT_STOCK": "Insufficient stock. Requested: {{requestedQuantity}}, Available: {{availableQuantity}}",
       "PRICE_INVALID": "Invalid price: {{price}}"
+    },
+    "user": {
+      "NOT_FOUND": "User not found",
+      "ALREADY_EXISTS": "User with email '{{email}}' already exists",
+      "INVALID_NATIONAL_CODE": "Invalid national code: {{nationalCode}}",
+      "INVALID_EMAIL": "Invalid email: {{email}}"
     }
   }
 }

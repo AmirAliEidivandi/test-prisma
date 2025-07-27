@@ -1,8 +1,8 @@
+import { ProductException } from '@exceptions/index';
 import { Injectable } from '@nestjs/common';
+import { ProductResponse } from '@responses/index';
 import { PrismaService } from '@services/prisma/prisma.service';
 import { I18nService } from 'nestjs-i18n';
-import { ProductException } from '../../common/exceptions';
-import { ProductResponse } from '@responses/domains/product.response';
 import { CreateProductDto } from './dto/create-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -21,15 +21,6 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto) {
     const product = await this.prisma.product.create({
       data: createProductDto,
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
     });
 
     return this.productResponse.created(product);
@@ -47,15 +38,6 @@ export class ProductsService {
         },
         skip: page * limit,
         take: limit,
-        include: {
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-              email: true,
-            },
-          },
-        },
         orderBy: {
           created_at: 'desc',
         },

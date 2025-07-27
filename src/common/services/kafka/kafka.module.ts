@@ -1,39 +1,11 @@
-import { KafkaServiceConstants } from '@constants/kafka.constants';
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { Global, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { KafkaService } from './kafka.service';
 
-const clients = [];
-const items = [
-  ClientsModule.registerAsync({
-    clients: clients.map((client) => ({
-      name: client.name,
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: client.clientId,
-            brokers: [
-              `${configService.get<string>(
-                'KAFKA_HOST',
-              )}:${configService.get<number>('KAFKA_PORT')}`,
-            ],
-            ...KafkaServiceConstants.CLIENT_OPTIONS,
-          },
-          consumer: {
-            groupId: client.groupId,
-          },
-        },
-      }),
-      inject: [ConfigService],
-    })),
-  }),
-];
-
+@Global()
 @Module({
-  imports: [...items],
-  providers: [],
-  exports: [...items],
+  imports: [ConfigModule],
+  providers: [KafkaService],
+  exports: [KafkaService],
 })
 export class KafkaModule {}

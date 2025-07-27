@@ -5,7 +5,8 @@
       "INTERNAL_ERROR": "خطای غیرمنتظره ای رخ داد",
       "BAD_REQUEST": "درخواست نامعتبر",
       "FORBIDDEN": "دسترسی ممنوع",
-      "CONFLICT": "تداخل منبع"
+      "CONFLICT": "تداخل منبع",
+      "KAFKA_REQUEST_TIMEOUT": "درخواست کافکا به مدت زمان طولانی در حال انتظار است"
     },
     "auth": {
       "UNAUTHORIZED": "دسترسی غیرمجاز",
@@ -27,6 +28,12 @@
       "INVALID_STATUS": "وضعیت محصول نامعتبر: {{status}}",
       "INSUFFICIENT_STOCK": "موجودی کافی نیست. درخواست شده: {{requestedQuantity}}، موجود: {{availableQuantity}}",
       "PRICE_INVALID": "قیمت نامعتبر: {{price}}"
+    },
+    "user": {
+      "NOT_FOUND": "کاربر یافت نشد",
+      "ALREADY_EXISTS": "کاربری با ایمیل '{{email}}' از قبل موجود است",
+      "INVALID_NATIONAL_CODE": "کد ملی نامعتبر: {{nationalCode}}",
+      "INVALID_EMAIL": "ایمیل نامعتبر: {{email}}"
     }
   }
 }
