@@ -7,3 +7,4 @@ export * from './domains/auth.exception';
 export * from './domains/common.exception';
 export * from './domains/product.exception';
 export * from './domains/validation.exception';
+export * from './domains/user.exception';

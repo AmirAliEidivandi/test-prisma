@@ -16,7 +16,9 @@
     "isBoolean": "{{field}} باید مقدار بولین باشد",
     "isArray": "{{field}} باید آرایه باشد",
     "arrayMinSize": "{{field}} باید حداقل {{min}} آیتم داشته باشد",
-    "arrayMaxSize": "{{field}} باید حداکثر {{max}} آیتم داشته باشد"
+    "arrayMaxSize": "{{field}} باید حداکثر {{max}} آیتم داشته باشد",
+    "phoneNumber": "{{field}} باید شماره تلفن معتبر باشد",
+    "nationalCode": "{{field}} باید کد ملی معتبر باشد"
   },
   "fields": {
     "firstName": "نام",

@@ -29,26 +29,26 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const i18nService = app.get(I18nService);
 
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.KAFKA,
-    options: {
-      client: {
-        clientId: KafkaServiceConstants.TEST_PRISMA_CLIENT_ID,
-        brokers: [
-          `${configService.get('KAFKA_HOST')}:${configService.get<string>(
-            'KAFKA_PORT',
-          )}`,
-        ],
-        ...KafkaServiceConstants.CLIENT_OPTIONS,
-        logLevel: logLevel.NOTHING,
-      },
-      consumer: {
-        groupId: KafkaServiceConstants.TEST_PRISMA_GROUP_ID,
-        allowAutoTopicCreation: true,
-      },
-    },
-  });
-  app.startAllMicroservices();
+  // app.connectMicroservice<MicroserviceOptions>({
+  //   transport: Transport.KAFKA,
+  //   options: {
+  //     client: {
+  //       clientId: KafkaServiceConstants.TEST_PRISMA_CLIENT_ID,
+  //       brokers: [
+  //         `${configService.get('KAFKA_HOST')}:${configService.get<string>(
+  //           'KAFKA_PORT',
+  //         )}`,
+  //       ],
+  //       ...KafkaServiceConstants.CLIENT_OPTIONS,
+  //       logLevel: logLevel.NOTHING,
+  //     },
+  //     consumer: {
+  //       groupId: KafkaServiceConstants.TEST_PRISMA_GROUP_ID,
+  //       allowAutoTopicCreation: true,
+  //     },
+  //   },
+  // });
+  // app.startAllMicroservices();
 
   app.use(morgan('dev'));
   app.setGlobalPrefix('api');

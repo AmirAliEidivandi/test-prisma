@@ -16,7 +16,9 @@
     "isBoolean": "{{field}} must be a boolean value",
     "isArray": "{{field}} must be an array",
     "arrayMinSize": "{{field}} must contain at least {{min}} items",
-    "arrayMaxSize": "{{field}} must contain at most {{max}} items"
+    "arrayMaxSize": "{{field}} must contain at most {{max}} items",
+    "phoneNumber": "{{field}} must be a valid phone number",
+    "nationalCode": "{{field}} must be a valid national code"
   },
   "fields": {
     "firstName": "First Name",

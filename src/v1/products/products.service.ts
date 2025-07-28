@@ -1,5 +1,6 @@
 import { ProductException } from '@exceptions/index';
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { ProductResponse } from '@responses/index';
 import { PrismaService } from '@services/prisma/prisma.service';
 import { I18nService } from 'nestjs-i18n';
@@ -79,9 +80,10 @@ export class ProductsService {
 
       return this.productResponse.updated(updatedProduct);
     } catch (error) {
-      if (error.code === 'P2025') {
-        // Prisma error code for "Record to update not found"
-        throw ProductException.notFound(id);
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw ProductException.notFound(id);
+        }
       }
       throw error;
     }
@@ -96,8 +98,10 @@ export class ProductsService {
 
       return this.productResponse.deleted();
     } catch (error) {
-      if (error.code === 'P2025') {
-        throw ProductException.notFound(id);
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw ProductException.notFound(id);
+        }
       }
       throw error;
     }

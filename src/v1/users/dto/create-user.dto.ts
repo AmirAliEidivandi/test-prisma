@@ -1,4 +1,13 @@
-import { IsDateString, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEmail,
+  IsNotEmpty,
+  IsPhoneNumber,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsString({ message: 'validation.constraints.isString' })
@@ -23,6 +32,10 @@ export class CreateUserDto {
 
   @IsString({ message: 'validation.constraints.isString' })
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
+  @IsPhoneNumber('IR', { message: 'validation.constraints.isPhoneNumber' })
+  @MinLength(11, { message: 'validation.constraints.minLength' })
+  @MaxLength(11, { message: 'validation.constraints.maxLength' })
+  @Matches(/^09\d{9}$/, { message: 'validation.constraints.phoneNumber' })
   phone: string;
 
   @IsString({ message: 'validation.constraints.isString' })

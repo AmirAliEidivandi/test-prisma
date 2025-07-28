@@ -32,10 +32,14 @@ model Product {
 
 model User {
   id               String       @id @default(uuid())
-  profileId        String?      @unique @map("profile_id")
+  firstName        String?       @map("first_name")
+  lastName         String?       @map("last_name")
+  nationalCode     String?       @unique @map("national_code")
+  email            String?       @unique @map("email")
   jobPosition      String?      @map("job_position")
   phone            String?      @map("phone")
   address          String?      @map("address")
+  birthDate        DateTime?    @map("birth_date")
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
   deletedAt        DateTime?    @map("deleted_at")

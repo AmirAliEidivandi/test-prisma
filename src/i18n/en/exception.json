@@ -17,23 +17,23 @@
     },
     "validation": {
       "FAILED": "Provided data failed validation",
-      "REQUIRED_FIELD": "Required field: {{field}}",
-      "INVALID_FORMAT": "Invalid format for {{field}}, expected: {{expectedFormat}}",
-      "OUT_OF_RANGE": "Value for {{field}} is out of range ({{min}} - {{max}})",
-      "DUPLICATE_VALUE": "Duplicate value for {{field}}: {{value}}"
+      "REQUIRED_FIELD": "Required field: {field}",
+      "INVALID_FORMAT": "Invalid format for {field}, expected: {expectedFormat}",
+      "OUT_OF_RANGE": "Value for {field} is out of range ({min} - {max})",
+      "DUPLICATE_VALUE": "Duplicate value for {field}: {value}"
     },
     "product": {
       "NOT_FOUND": "Product not found",
-      "ALREADY_EXISTS": "Product with name '{{name}}' already exists",
-      "INVALID_STATUS": "Invalid product status: {{status}}",
-      "INSUFFICIENT_STOCK": "Insufficient stock. Requested: {{requestedQuantity}}, Available: {{availableQuantity}}",
-      "PRICE_INVALID": "Invalid price: {{price}}"
+      "ALREADY_EXISTS": "Product with name {name} already exists",
+      "INVALID_STATUS": "Invalid product status: {status}",
+      "INSUFFICIENT_STOCK": "Insufficient stock. Requested: {requestedQuantity}, Available: {availableQuantity}",
+      "PRICE_INVALID": "Invalid price: {price}"
     },
     "user": {
       "NOT_FOUND": "User not found",
-      "ALREADY_EXISTS": "User with email '{{email}}' already exists",
-      "INVALID_NATIONAL_CODE": "Invalid national code: {{nationalCode}}",
-      "INVALID_EMAIL": "Invalid email: {{email}}"
+      "ALREADY_EXISTS_EMAIL": "User with email {email} already exists",
+      "ALREADY_EXISTS_NATIONAL_CODE": "User with national code {nationalCode} already exists",
+      "INVALID_EMAIL": "Invalid email: {email}"
     }
   }
 }
