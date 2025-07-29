@@ -35,7 +35,8 @@
       "@responses/*": ["src/common/responses/*"],
       "@products/*": ["src/v1/products/*"],
       "@interceptors/*": ["src/common/interceptors/*"],
-      "@pipes/*": ["src/common/pipes/*"]
+      "@pipes/*": ["src/common/pipes/*"],
+      "@users/*": ["src/v1/users/*"]
     }
   }
 }
