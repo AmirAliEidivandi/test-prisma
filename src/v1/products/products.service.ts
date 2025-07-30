@@ -37,6 +37,9 @@ export class ProductsService {
           status: status,
           deleted_at: null,
         },
+        include: {
+          user: true,
+        },
         skip: page * limit,
         take: limit,
         orderBy: {

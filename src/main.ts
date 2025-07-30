@@ -1,10 +1,8 @@
-import { KafkaServiceConstants } from '@constants/kafka.constants';
 import { EnhancedExceptionFilter } from '@filter/enhanced-exception.filter';
 import { LanguageInterceptor } from '@interceptors/language.interceptor';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -13,7 +11,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { EnhancedValidationPipe } from '@pipes/enhanced-validation.pipe';
 import { registerValidationEnums } from '@utils/validation-enums';
 import helmet from 'helmet';
-import { logLevel } from 'kafkajs';
 import morgan from 'morgan';
 import { I18nService } from 'nestjs-i18n';
 import { AppModule } from './app.module';

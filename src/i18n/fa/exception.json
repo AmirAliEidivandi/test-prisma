@@ -31,8 +31,8 @@
     },
     "user": {
       "NOT_FOUND": "کاربر یافت نشد",
-      "ALREADY_EXISTS": "کاربری با ایمیل {email} از قبل موجود است",
-      "INVALID_NATIONAL_CODE": "کاربری با کد ملی {nationalCode} از قبل موجود است",
+      "ALREADY_EXISTS_EMAIL": "کاربری با ایمیل {email} از قبل موجود است",
+      "ALREADY_EXISTS_NATIONAL_CODE": "کاربری با کد ملی {nationalCode} از قبل موجود است",
       "INVALID_EMAIL": "ایمیل نامعتبر: {email}"
     }
   }

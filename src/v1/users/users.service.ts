@@ -1,11 +1,12 @@
 import { UserException } from '@exceptions/index';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { UserResponse } from '@responses/index';
+import { IBaseResponse, UserResponse } from '@responses/index';
 import { PrismaService } from '@services/prisma/prisma.service';
 import { I18nService } from 'nestjs-i18n';
 import { CreateUserDto } from './dto/create-user.dto';
 import { QueryUserDto } from './dto/query-user.dto';
+import { ResponseUserDto } from './dto/response-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -18,7 +19,9 @@ export class UsersService {
     this.userResponse = new UserResponse(this.i18n);
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async create(
+    createUserDto: CreateUserDto,
+  ): Promise<IBaseResponse<ResponseUserDto>> {
     const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -39,43 +42,34 @@ export class UsersService {
     }
 
     const user = await this.prisma.user.create({
-      data: createUserDto,
+      data: {
+        ...createUserDto,
+        birthDate: new Date(createUserDto.birthDate),
+      },
     });
 
     return this.userResponse.created(user);
   }
 
   async findAll(queryUserDto: QueryUserDto) {
-    const { search, page, limit } = queryUserDto;
-
-    const where: Prisma.UserWhereInput = {
-      deletedAt: null,
-      ...(search && {
-        OR: [
-          { firstName: { contains: search } },
-          { lastName: { contains: search } },
-          { nationalCode: { contains: search } },
-          { email: { contains: search } },
-        ],
-      }),
-    };
+    const { page, limit } = queryUserDto;
 
     const [users, totalCount] = await Promise.all([
       this.prisma.user.findMany({
-        where,
+        where: {
+          deletedAt: null,
+        },
         skip: page * limit,
         take: limit,
         orderBy: {
           createdAt: 'desc',
         },
-        select: {
-          id: true,
-          firstName: true,
-          email: true,
-          createdAt: true,
+      }),
+      this.prisma.user.count({
+        where: {
+          deletedAt: null,
         },
       }),
-      this.prisma.user.count({ where }),
     ]);
     return this.userResponse.listed(users, totalCount, page, limit);
   }
