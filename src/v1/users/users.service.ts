@@ -1,12 +1,13 @@
 import { UserException } from '@exceptions/index';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { IBaseResponse, UserResponse } from '@responses/index';
+import { UserResponse } from '@responses/index';
+import { ProfileKafkaService } from '@services/kafka/profile/profile-kafka.service';
 import { PrismaService } from '@services/prisma/prisma.service';
 import { I18nService } from 'nestjs-i18n';
 import { CreateUserDto } from './dto/create-user.dto';
 import { QueryUserDto } from './dto/query-user.dto';
-import { ResponseUserDto } from './dto/response-user.dto';
+import { UserResponseDto } from './dto/response-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -15,40 +16,39 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly i18n: I18nService,
+    private readonly profileKafkaService: ProfileKafkaService,
   ) {
     this.userResponse = new UserResponse(this.i18n);
   }
 
-  async create(
-    createUserDto: CreateUserDto,
-  ): Promise<IBaseResponse<ResponseUserDto>> {
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [
-          { nationalCode: createUserDto.nationalCode },
-          { email: createUserDto.email },
-        ],
-      },
-    });
-    if (existingUser) {
-      if (existingUser.nationalCode === createUserDto.nationalCode) {
-        throw UserException.alreadyExistsNationalCode(
-          createUserDto.nationalCode,
-        );
-      }
-      if (existingUser.email === createUserDto.email) {
-        throw UserException.alreadyExistsEmail(createUserDto.email);
-      }
-    }
-
+  async create(createUserDto: CreateUserDto) {
     const user = await this.prisma.user.create({
       data: {
-        ...createUserDto,
-        birthDate: new Date(createUserDto.birthDate),
+        address: createUserDto.address,
+        jobPosition: createUserDto.jobPosition,
+        phone: createUserDto.phone,
       },
     });
 
-    return this.userResponse.created(user);
+    const profile = await this.profileKafkaService.createProfile(createUserDto);
+    const updatedUser = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        profileId: profile._id,
+      },
+    });
+    const responseData: UserResponseDto = {
+      ...updatedUser,
+      profile: {
+        id: profile._id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        birthDate: profile.birthDate,
+        nationalCode: profile.nationalCode,
+      },
+    };
+    return this.userResponse.created(responseData);
   }
 
   async findAll(queryUserDto: QueryUserDto) {

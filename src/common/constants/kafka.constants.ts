@@ -5,6 +5,10 @@ export namespace KafkaServiceConstants {
   export const TEST_PRISMA_CLIENT_ID = 'test-prisma';
   export const TEST_PRISMA_GROUP_ID = 'test-prisma-consumer';
 
+  export const PROFILE_SERVICE_NAME = 'PROFILE_SERVICE';
+  export const PROFILE_CLIENT_ID = 'profile';
+  export const PROFILE_GROUP_ID = 'profile-consumer';
+
   export const CLIENT_OPTIONS = {
     enforceRequestTimeout: false,
     retry: {
@@ -15,7 +19,14 @@ export namespace KafkaServiceConstants {
 
   // Kafka Topics
   export const TOPICS = {
-    CREATE_USER: KafkaMessagingEvents.CREATE_USER,
-    CREATE_USER_RESPONSE: KafkaMessagingEvents.CREATE_USER_RESPONSE,
+    CREATE_PROFILE: KafkaMessagingEvents.CREATE_PROFILE,
+    UPDATE_PROFILE: KafkaMessagingEvents.UPDATE_PROFILE,
+    DELETE_PROFILE: KafkaMessagingEvents.DELETE_PROFILE,
+    GET_PROFILE: KafkaMessagingEvents.GET_PROFILE,
+    GET_ALL_PROFILES: KafkaMessagingEvents.GET_ALL_PROFILES,
+    GET_PROFILE_BY_ID: KafkaMessagingEvents.GET_PROFILE_BY_ID,
+    GET_PROFILE_BY_EMAIL: KafkaMessagingEvents.GET_PROFILE_BY_EMAIL,
+    GET_PROFILE_BY_NATIONAL_CODE:
+      KafkaMessagingEvents.GET_PROFILE_BY_NATIONAL_CODE,
   } as const;
 }

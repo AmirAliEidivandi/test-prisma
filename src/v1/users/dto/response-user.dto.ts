@@ -1,91 +1,96 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class ResponseUserDto {
+export class ProfileDto {
   @ApiProperty({
-    description: 'The id of the user',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    required: true,
-    type: String,
+    description: 'Profile ID',
+    example: '1a624450-3a14-4910-a7f2-5ce67f0f772b',
   })
   id: string;
 
   @ApiProperty({
-    description: 'The first name of the user',
-    example: 'John',
-    required: true,
-    type: String,
+    description: 'User first name',
+    example: 'amirali',
   })
   firstName: string;
 
   @ApiProperty({
-    description: 'The last name of the user',
-    example: 'Doe',
-    required: true,
-    type: String,
+    description: 'User last name',
+    example: 'eidivandi',
   })
   lastName: string;
 
   @ApiProperty({
-    description: 'The email of the user',
-    example: 'john.doe@example.com',
-    required: true,
-    type: String,
+    description: 'User email',
+    example: 'amirfdali@gmail.com',
   })
   email: string;
 
   @ApiProperty({
-    description: 'The national code of the user',
-    example: '1234567890',
-    required: true,
-    type: String,
+    description: 'User national code',
+    example: '123732132432',
   })
   nationalCode: string;
 
   @ApiProperty({
-    description: 'The birth date of the user',
-    example: '1990-01-01',
-    required: true,
-    type: Date,
+    description: 'User birth date',
+    example: '2002-11-13T00:00:00.000Z',
   })
-  birthDate: Date;
+  birthDate: string;
+}
+
+export class UserResponseDto {
+  @ApiProperty({
+    description: 'User ID',
+    example: '7cbaa954-1a5c-49ad-8478-9b554ccfaead',
+  })
+  id: string;
 
   @ApiProperty({
-    description: 'The job position of the user',
-    example: 'Software Engineer',
-    required: true,
-    type: String,
+    description: 'Profile ID reference',
+    example: '1a624450-3a14-4910-a7f2-5ce67f0f772b',
+  })
+  profileId: string;
+
+  @ApiProperty({
+    description: 'User job position',
+    example: 'software engineer',
   })
   jobPosition: string;
 
   @ApiProperty({
-    description: 'The address of the user',
-    example: '123 Main St, Anytown, USA',
-    required: true,
-    type: String,
+    description: 'User phone number',
+    example: '09132127492',
+  })
+  phone: string;
+
+  @ApiProperty({
+    description: 'User address',
+    example: 'new address',
   })
   address: string;
 
   @ApiProperty({
-    description: 'The created at of the user',
-    example: '2021-01-01T00:00:00.000Z',
-    required: true,
-    type: Date,
+    description: 'User creation timestamp',
+    example: '2025-08-02T12:37:59.292Z',
   })
   createdAt: Date;
 
   @ApiProperty({
-    description: 'The updated at of the user',
-    example: '2021-01-01T00:00:00.000Z',
-    required: true,
-    type: Date,
+    description: 'User last update timestamp',
+    example: '2025-08-02T12:37:59.359Z',
   })
   updatedAt: Date;
 
   @ApiProperty({
-    description: 'The deleted at of the user',
-    example: '2021-01-01T00:00:00.000Z',
-    required: true,
-    type: Date,
+    description: 'User deletion timestamp (null if not deleted)',
+    example: null,
+    nullable: true,
   })
-  deletedAt: Date;
+  deletedAt: Date | null;
+
+  @ApiProperty({
+    description: 'User profile information',
+    type: ProfileDto,
+  })
+  profile: ProfileDto;
 }

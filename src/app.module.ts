@@ -9,7 +9,6 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ProductsModule } from '@products/products.module';
-import { KafkaModule } from '@services/kafka/kafka.module';
 import { PrismaModule } from '@services/prisma/prisma.module';
 import { SharedModule } from '@shared/shared.module';
 import { UsersModule } from '@users/users.module';
@@ -70,7 +69,6 @@ import { AppService } from './app.service';
       imports: [KeycloakConfigModule, ConfigModule],
     }),
     PrismaModule,
-    KafkaModule,
     TerminusModule,
     HttpModule,
     SharedModule,

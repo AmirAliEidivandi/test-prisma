@@ -1,8 +1,10 @@
+import { KafkaServiceConstants } from '@constants/kafka.constants';
 import { EnhancedExceptionFilter } from '@filter/enhanced-exception.filter';
 import { LanguageInterceptor } from '@interceptors/language.interceptor';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -11,6 +13,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { EnhancedValidationPipe } from '@pipes/enhanced-validation.pipe';
 import { registerValidationEnums } from '@utils/validation-enums';
 import helmet from 'helmet';
+import { logLevel } from 'kafkajs';
 import morgan from 'morgan';
 import { I18nService } from 'nestjs-i18n';
 import { AppModule } from './app.module';
@@ -26,26 +29,26 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const i18nService = app.get(I18nService);
 
-  // app.connectMicroservice<MicroserviceOptions>({
-  //   transport: Transport.KAFKA,
-  //   options: {
-  //     client: {
-  //       clientId: KafkaServiceConstants.TEST_PRISMA_CLIENT_ID,
-  //       brokers: [
-  //         `${configService.get('KAFKA_HOST')}:${configService.get<string>(
-  //           'KAFKA_PORT',
-  //         )}`,
-  //       ],
-  //       ...KafkaServiceConstants.CLIENT_OPTIONS,
-  //       logLevel: logLevel.NOTHING,
-  //     },
-  //     consumer: {
-  //       groupId: KafkaServiceConstants.TEST_PRISMA_GROUP_ID,
-  //       allowAutoTopicCreation: true,
-  //     },
-  //   },
-  // });
-  // app.startAllMicroservices();
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        clientId: KafkaServiceConstants.TEST_PRISMA_CLIENT_ID,
+        brokers: [
+          `${configService.get('KAFKA_HOST')}:${configService.get<string>(
+            'KAFKA_PORT',
+          )}`,
+        ],
+        ...KafkaServiceConstants.CLIENT_OPTIONS,
+        logLevel: logLevel.NOTHING,
+      },
+      consumer: {
+        groupId: KafkaServiceConstants.TEST_PRISMA_GROUP_ID,
+        allowAutoTopicCreation: true,
+      },
+    },
+  });
+  app.startAllMicroservices();
 
   app.use(morgan('dev'));
   app.setGlobalPrefix('api');
@@ -83,8 +86,9 @@ async function bootstrap() {
   }
 
   app.enableCors({
-    origin: configService.get<string>('ORIGIN').split(' '),
-    credentials: true,
+    origin: '*',
+    // origin: configService.get<string>('ORIGIN').split(' '),
+    // credentials: true,
   });
   app.useGlobalInterceptors(new LanguageInterceptor());
   app.useGlobalFilters(new EnhancedExceptionFilter(app.get(I18nService)));
