@@ -1,19 +1,24 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class QueryUserDto {
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'validation.constraints.isString' })
   search?: string;
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'validation.constraints.isString' })
   sort?: string;
 
   @IsOptional()
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt({ message: 'validation.constraints.isInt' })
+  @Min(0, { message: 'validation.constraints.min' })
   page?: number = 0;
 
   @IsOptional()
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt({ message: 'validation.constraints.isInt' })
+  @Min(1, { message: 'validation.constraints.min' })
   limit?: number = 10;
 }

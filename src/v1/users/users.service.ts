@@ -39,21 +39,13 @@ export class UsersService {
     });
     const responseData: UserResponseDto = {
       ...updatedUser,
-      profile: {
-        id: profile._id,
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        email: profile.email,
-        birthDate: profile.birthDate,
-        nationalCode: profile.nationalCode,
-      },
+      profile,
     };
     return this.userResponse.created(responseData);
   }
 
   async findAll(queryUserDto: QueryUserDto) {
     const { page, limit } = queryUserDto;
-
     const [users, totalCount] = await Promise.all([
       this.prisma.user.findMany({
         where: {
@@ -71,7 +63,23 @@ export class UsersService {
         },
       }),
     ]);
-    return this.userResponse.listed(users, totalCount, page, limit);
+    const profileIds = users.map((user) => user.profileId);
+    const profiles = await this.profileKafkaService.findAllProfile(
+      profileIds,
+      page,
+      limit,
+      ['_id', 'firstName', 'lastName', 'email'],
+    );
+    const response = users.map((user) => {
+      const profile = profiles.users.find(
+        (profile) => profile._id === user.profileId,
+      );
+      return {
+        ...user,
+        profile: profile ? profile : null,
+      };
+    });
+    return this.userResponse.listed(response, totalCount, page, limit);
   }
 
   async findOne(id: string) {
@@ -83,7 +91,15 @@ export class UsersService {
     if (!user) {
       throw UserException.notFound(id);
     }
-    return this.userResponse.retrieved(user);
+    const profile = await this.profileKafkaService.findOneProfile(
+      user.profileId,
+      ['_id', 'firstName', 'lastName', 'email'],
+    );
+    const responseData: UserResponseDto = {
+      ...user,
+      profile,
+    };
+    return this.userResponse.retrieved(responseData);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
