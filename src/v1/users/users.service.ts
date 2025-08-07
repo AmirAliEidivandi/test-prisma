@@ -121,10 +121,11 @@ export class UsersService {
 
   async remove(id: string) {
     try {
-      await this.prisma.user.update({
+      const user = await this.prisma.user.update({
         where: { id },
         data: { deletedAt: new Date() },
       });
+      this.profileKafkaService.deleteProfile(user.profileId);
       return this.userResponse.deleted();
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {

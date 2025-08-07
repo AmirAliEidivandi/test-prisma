@@ -103,4 +103,11 @@ export class ProfileKafkaService {
         });
     });
   }
+
+  deleteProfile(id: string) {
+    this.kafkaClient.emit(
+      KafkaServiceConstants.TOPICS.DELETE_PROFILE,
+      encrypt({ id }),
+    );
+  }
 }

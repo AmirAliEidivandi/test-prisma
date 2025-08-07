@@ -22,6 +22,7 @@ import {
 import * as path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EventsGateway } from './events/events.gateway';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { AppService } from './app.service';
     AppService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_FILTER, useClass: EnhancedExceptionFilter },
+    EventsGateway,
     // { provide: APP_GUARD, useClass: AuthGuard },
     // { provide: APP_GUARD, useClass: RoleGuard },
   ],
