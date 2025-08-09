@@ -33,11 +33,13 @@
       "@utils/*": ["src/common/utils/*"],
       "@exceptions/*": ["src/common/exceptions/*"],
       "@responses/*": ["src/common/responses/*"],
-      "@products/*": ["src/v1/products/*"],
       "@interceptors/*": ["src/common/interceptors/*"],
       "@pipes/*": ["src/common/pipes/*"],
       "@users/*": ["src/v1/users/*"],
-      "@swagger/*": ["src/common/swagger/*"]
+      "@chats/*": ["src/v1/chats/*"],
+      "@messages/*": ["src/v1/messages/*"],
+      "@swagger/*": ["src/common/swagger/*"],
+      "@guards/*": ["src/common/guards/*"]
     }
   }
 }

@@ -1,13 +1,27 @@
 import { createParamDecorator } from '@nestjs/common';
-import { computeRoles } from '@utils/user.util';
+import { ModuleRef } from '@nestjs/core';
+import { UserUtil } from '@utils/user.util';
 
-export const GetUser = createParamDecorator((data, context): User => {
-  const req = context.switchToHttp().getRequest();
-  let user = req.user;
+let moduleRefInstance: ModuleRef;
 
-  if (user) {
-    user = computeRoles(user);
-  }
+export function setModuleRef(moduleRef: ModuleRef) {
+  moduleRefInstance = moduleRef;
+}
 
-  return user;
-});
+export const GetUser = createParamDecorator(
+  async (data, context): Promise<User> => {
+    const req = context.switchToHttp().getRequest();
+    const user = req.user;
+
+    try {
+      if (moduleRefInstance) {
+        const userUtil = moduleRefInstance.get(UserUtil, { strict: false });
+        if (userUtil) {
+          return await userUtil.computeRoles(user);
+        }
+      }
+    } catch (error) {
+      return user;
+    }
+  },
+);

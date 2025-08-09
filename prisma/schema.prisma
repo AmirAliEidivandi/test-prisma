@@ -13,21 +13,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ProductStatus {
-  ACTIVE
-  INACTIVE
-}
-
-model Product {
-  id        String   @id @default(uuid())
-  name      String
-  price     Int
-  status    ProductStatus @default(ACTIVE)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  deleted_at DateTime?
+enum MessageRole {
+  USER
+  ASSISTANT
 }
 
 model User {
@@ -39,5 +27,30 @@ model User {
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
   deletedAt        DateTime?    @map("deleted_at")
-  products         Product[]
+  chats            Chat[]
+}
+
+model Chat {
+  id        String   @id @default(uuid())
+  title     String
+  model     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  messages  Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  role      MessageRole
+  chatId    String
+  chat      Chat   @relation(fields: [chatId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  order     Int
+  metadata  Json?
 }

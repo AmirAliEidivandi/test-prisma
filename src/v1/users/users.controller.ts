@@ -1,3 +1,4 @@
+import { RolesGuard } from '@guards/roles.guard';
 import {
   Body,
   Controller,
@@ -7,12 +8,14 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { QueryUserDto } from './dto/query-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 
+@UseGuards(RolesGuard)
 @Controller('v1/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

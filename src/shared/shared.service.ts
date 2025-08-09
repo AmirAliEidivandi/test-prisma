@@ -1,7 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import OpenAI from 'openai';
 
 @Injectable()
 export class SharedService {
+  private readonly openai: OpenAI;
+  constructor(private readonly configService: ConfigService) {
+    this.openai = new OpenAI({
+      apiKey: this.configService.get('OPENAI_API_KEY'),
+      organization: this.configService.get('OPENAI_ORGANIZATION'),
+    });
+  }
+
+  getAiService() {
+    return this.openai;
+  }
+
   /**
    * Remove duplicates from an array
    * @param array - The array to remove duplicates from

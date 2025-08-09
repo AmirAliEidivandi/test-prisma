@@ -13,7 +13,8 @@
       "FORBIDDEN": "Access denied",
       "TOKEN_EXPIRED": "Token has expired",
       "TOKEN_INVALID": "Invalid token",
-      "CREDENTIALS_INVALID": "Invalid credentials"
+      "CREDENTIALS_INVALID": "Invalid credentials",
+      "FAILED_TO_COMPUTE_ROLES": "Failed to compute roles"
     },
     "validation": {
       "FAILED": "Provided data failed validation",

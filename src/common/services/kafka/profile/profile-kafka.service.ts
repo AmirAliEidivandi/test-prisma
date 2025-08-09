@@ -26,6 +26,9 @@ export class ProfileKafkaService {
     this.kafkaClient.subscribeToResponseOf(
       KafkaServiceConstants.TOPICS.UPDATE_PROFILE,
     );
+    this.kafkaClient.subscribeToResponseOf(
+      KafkaServiceConstants.TOPICS.GET_USER_ROLES,
+    );
   }
 
   createProfile(dto: CreateUserDto) {
@@ -109,5 +112,22 @@ export class ProfileKafkaService {
       KafkaServiceConstants.TOPICS.DELETE_PROFILE,
       encrypt({ id }),
     );
+  }
+
+  async getUserRoles(username: string, clientId: string) {
+    return new Promise<string[]>((resolve, reject) => {
+      this.kafkaClient
+        .send(
+          KafkaServiceConstants.TOPICS.GET_USER_ROLES,
+          encrypt({ username, client_id: clientId }),
+        )
+        .subscribe({
+          next: (value) => {
+            const response = decrypt(value) as string[];
+            resolve(response);
+          },
+          error: (error) => reject(error),
+        });
+    });
   }
 }

@@ -7,7 +7,7 @@ export namespace KafkaServiceConstants {
 
   export const PROFILE_SERVICE_NAME = 'PROFILE_SERVICE';
   export const PROFILE_CLIENT_ID = 'profile';
-  export const PROFILE_GROUP_ID = 'profile-consumer';
+  export const PROFILE_GROUP_ID = 'profile_consumer_profile';
 
   export const CLIENT_OPTIONS = {
     enforceRequestTimeout: false,
@@ -28,5 +28,6 @@ export namespace KafkaServiceConstants {
     GET_PROFILE_BY_EMAIL: KafkaMessagingEvents.GET_PROFILE_BY_EMAIL,
     GET_PROFILE_BY_NATIONAL_CODE:
       KafkaMessagingEvents.GET_PROFILE_BY_NATIONAL_CODE,
+    GET_USER_ROLES: KafkaMessagingEvents.GET_USER_ROLES,
   } as const;
 }
