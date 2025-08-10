@@ -40,7 +40,7 @@ export class OpenAiService {
       const stream = await this.client.chat.completions.create({
         model,
         messages,
-        temperature: temperature ?? 0.7,
+        temperature: temperature ?? undefined,
         stream: true,
       } as any);
 

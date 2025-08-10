@@ -167,9 +167,14 @@ export class ChatsGateway {
   @UseGuards(WsAuthGuard)
   async onListMessages(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { chatId: string },
+    @MessageBody() payload: { chatId: string; page?: number; limit?: number },
   ) {
     const { chatId } = payload;
+    const page = Number.isInteger(payload?.page) ? (payload.page as number) : 0;
+    const limit = Number.isInteger(payload?.limit)
+      ? (payload.limit as number)
+      : 20;
+    const skip = page * limit;
     const ownership = await this.prisma.chat.findFirst({
       where: {
         id: chatId,
@@ -179,12 +184,24 @@ export class ChatsGateway {
       select: { id: true },
     });
     if (!ownership) {
-      this.server.to(client.id).emit('messages_list', { chatId, messages: [] });
+      const empty = this.buildPaginatedEnvelope(
+        [],
+        0,
+        page,
+        limit,
+        'Messages listed',
+      );
+      this.server.to(client.id).emit('messages_list', { chatId, ...empty });
       return { chatId, count: 0 };
     }
+    const totalCount = await this.prisma.message.count({
+      where: { chatId, deletedAt: null },
+    });
     const messages = await this.prisma.message.findMany({
       where: { chatId, deletedAt: null },
       orderBy: { createdAt: 'asc' },
+      skip,
+      take: limit,
       select: {
         id: true,
         content: true,
@@ -193,17 +210,38 @@ export class ChatsGateway {
         chatId: true,
       },
     });
-    this.server.to(client.id).emit('messages_list', { chatId, messages });
+    const envelope = this.buildPaginatedEnvelope(
+      messages,
+      totalCount,
+      page,
+      limit,
+      'Messages listed',
+    );
+    this.server.to(client.id).emit('messages_list', { chatId, ...envelope });
     return { chatId, count: messages.length };
   }
 
   @SubscribeMessage('list_chats')
   @UseGuards(WsAuthGuard)
-  async onListChats(@ConnectedSocket() client: Socket) {
+  async onListChats(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload?: { page?: number; limit?: number },
+  ) {
     const userId = (client as any).data.authUser.id;
+    const page = Number.isInteger(payload?.page)
+      ? (payload?.page as number)
+      : 0;
+    const limit = Number.isInteger(payload?.limit)
+      ? (payload?.limit as number)
+      : 20;
+    const skip = page * limit;
+    const where = { userId, deletedAt: null } as const;
+    const totalCount = await this.prisma.chat.count({ where });
     const chats = await this.prisma.chat.findMany({
-      where: { userId, deletedAt: null },
+      where,
       orderBy: { updatedAt: 'desc' },
+      skip,
+      take: limit,
       select: {
         id: true,
         title: true,
@@ -212,7 +250,14 @@ export class ChatsGateway {
         updatedAt: true,
       },
     });
-    this.server.to(client.id).emit('chats_list', chats);
+    const envelope = this.buildPaginatedEnvelope(
+      chats,
+      totalCount,
+      page,
+      limit,
+      'Chats listed',
+    );
+    this.server.to(client.id).emit('chats_list', envelope);
     return { count: chats.length };
   }
 
@@ -223,5 +268,30 @@ export class ChatsGateway {
       select: { order: true },
     });
     return (last?.order ?? 0) + 1;
+  }
+
+  private buildPaginatedEnvelope<T>(
+    items: T[],
+    totalCount: number,
+    page: number,
+    limit: number,
+    message = 'Listed successfully',
+  ) {
+    const totalPages = Math.ceil((totalCount || 0) / (limit || 1));
+    return {
+      success: true,
+      message,
+      data: items,
+      meta: {
+        total: totalCount,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages - 1,
+        hasPreviousPage: page > 0,
+      },
+      timestamp: new Date().toISOString(),
+      statusCode: 200,
+    };
   }
 }

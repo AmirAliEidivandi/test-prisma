@@ -15,10 +15,13 @@ Client → Server
 
   اگر `chatId` خالی باشد، ابتدا چت ساخته می‌شود و رویداد `chat_created` ارسال می‌گردد.
 
-- `list_chats` بدون payload
+- `list_chats` payload:
+  ```json
+  { "page": 0, "limit": 20 }
+  ```
 - `list_messages` payload:
   ```json
-  { "chatId": "<CHAT_ID>" }
+  { "chatId": "<CHAT_ID>", "page": 0, "limit": 20 }
   ```
 
 Server → Client
@@ -29,7 +32,7 @@ Server → Client
 - `assistant_delta`: `{ chatId, delta }` تکه‌های پاسخ AI
 - `assistant_complete`: پیام کامل AI (پس از ذخیره)
 - `assistant_error`: `{ chatId, error }`
-- `chats_list`: آرایه‌ای از چت‌ها `{ id, title, model, createdAt, updatedAt }[]`
-- `messages_list`: `{ chatId, messages }` که messages شامل `{ id, content, role, createdAt, chatId }[]` است
+- `chats_list`: پاسخ صفحه‌بندی‌شده شامل `data` (لیست چت‌ها) و `meta`
+- `messages_list`: پاسخ صفحه‌بندی‌شده شامل `data` (لیست پیام‌ها) و `meta` به‌همراه `chatId`
 
 نکته: `role` یکی از `USER | ASSISTANT` است.

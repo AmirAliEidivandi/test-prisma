@@ -13,7 +13,12 @@
       "FORBIDDEN": "اجازه دسترسی ندارید",
       "TOKEN_EXPIRED": "توکن منقضی شده است",
       "TOKEN_INVALID": "توکن نامعتبر است",
-      "CREDENTIALS_INVALID": "اعتبارنامه های نامعتبر"
+      "CREDENTIALS_INVALID": "اعتبارنامه های نامعتبر",
+      "FAILED_TO_COMPUTE_ROLES": "با مشکلی مواجه شده است",
+      "MISSING_PUBLIC_KEY": "کلید عمومی موجود نیست",
+      "MISSING_AUTH_TOKEN": "توکن احراز هویت موجود نیست",
+      "INVALID_TOKEN": "توکن نامعتبر است",
+      "USER_NOT_REGISTERED": "کاربر ثبت نام نکرده است"
     },
     "validation": {
       "FAILED": "اطلاعات ارسال شده نامعتبر است",

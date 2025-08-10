@@ -7,22 +7,24 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@services/prisma/prisma.service';
 import * as jwt from 'jsonwebtoken';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class WsAuthGuard implements CanActivate {
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
+    private readonly i18n: I18nService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: any = context.switchToWs().getClient();
 
     const token = this.extractToken(client);
-    if (!token) throw new UnauthorizedException('Missing auth token');
+    if (!token) throw new UnauthorizedException(this.i18n.t('exception.errors.auth.MISSING_AUTH_TOKEN'));
 
     const publicKey = this.configService.get<string>('KEYCLOAK_PUBLIC_KEY');
-    if (!publicKey) throw new UnauthorizedException('Missing public key');
+    if (!publicKey) throw new UnauthorizedException(this.i18n.t('exception.errors.auth.MISSING_PUBLIC_KEY'));
 
     let decoded: any;
     try {
@@ -30,14 +32,14 @@ export class WsAuthGuard implements CanActivate {
         algorithms: ['RS256'],
       });
     } catch (e) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException(this.i18n.t('exception.errors.auth.INVALID_TOKEN'));
     }
 
     // Find user by Keycloak subject (sub) mapped to our User.kid
     const user = await this.prisma.user.findFirst({
       where: { kid: decoded.sub, deletedAt: null } as any,
     });
-    if (!user) throw new UnauthorizedException('User not registered');
+    if (!user) throw new UnauthorizedException(this.i18n.t('exception.errors.auth.USER_NOT_REGISTERED'));
 
     client.data = client.data || {};
     client.data.authUser = user;
