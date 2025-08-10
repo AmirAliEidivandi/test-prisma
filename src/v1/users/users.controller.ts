@@ -1,18 +1,10 @@
+import { KafkaServiceConstants } from '@constants/kafka.constants';
+import { Roles } from '@decorators/roles.decorator';
+import { GetUser } from '@decorators/user.decorator';
+import { KeycloakRoleEnum } from '@enums/keycloak-role-enum';
 import { RolesGuard } from '@guards/roles.guard';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { QueryUserDto } from './dto/query-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { EventPattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
 
 @UseGuards(RolesGuard)
@@ -20,28 +12,14 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @EventPattern(KafkaServiceConstants.TOPICS.REGISTERED_USER)
+  registeredUser(@Payload() payload: string) {
+    return this.usersService.registeredUser(payload);
   }
 
-  @Get()
-  findAll(@Query() queryUserDto: QueryUserDto) {
-    return this.usersService.findAll(queryUserDto);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
-  }
-
-  @Put(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  @Roles(KeycloakRoleEnum.VIEW_PEOPLE_SELF)
+  @Get('info')
+  getInfo(@GetUser() user: User) {
+    return this.usersService.getInfo(user);
   }
 }

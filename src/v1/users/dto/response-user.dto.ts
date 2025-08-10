@@ -11,13 +11,13 @@ export class ProfileDto {
     description: 'User first name',
     example: 'amirali',
   })
-  firstName?: string;
+  first_name?: string;
 
   @ApiProperty({
     description: 'User last name',
     example: 'eidivandi',
   })
-  lastName?: string;
+  last_name?: string;
 
   @ApiProperty({
     description: 'User email',
@@ -29,25 +29,25 @@ export class ProfileDto {
     description: 'User national code',
     example: '123732132432',
   })
-  nationalCode?: string;
+  national_code?: string;
 
   @ApiProperty({
     description: 'User birth date',
     example: '2002-11-13T00:00:00.000Z',
   })
-  birthDate?: string;
+  birth_date?: string;
 
   @ApiProperty({
     description: 'User creation timestamp',
     example: '2025-08-02T12:37:59.292Z',
   })
-  createdAt?: Date;
+  created_at?: Date;
 
   @ApiProperty({
     description: 'User last update timestamp',
     example: '2025-08-02T12:37:59.359Z',
   })
-  updatedAt?: Date;
+  updated_at?: Date;
 }
 
 export class UserResponseDto {
@@ -62,24 +62,6 @@ export class UserResponseDto {
     example: '1a624450-3a14-4910-a7f2-5ce67f0f772b',
   })
   profileId?: string;
-
-  @ApiProperty({
-    description: 'User job position',
-    example: 'software engineer',
-  })
-  jobPosition?: string;
-
-  @ApiProperty({
-    description: 'User phone number',
-    example: '09132127492',
-  })
-  phone?: string;
-
-  @ApiProperty({
-    description: 'User address',
-    example: 'new address',
-  })
-  address?: string;
 
   @ApiProperty({
     description: 'User creation timestamp',

@@ -19,15 +19,8 @@ export namespace KafkaServiceConstants {
 
   // Kafka Topics
   export const TOPICS = {
-    CREATE_PROFILE: KafkaMessagingEvents.CREATE_PROFILE,
-    UPDATE_PROFILE: KafkaMessagingEvents.UPDATE_PROFILE,
-    DELETE_PROFILE: KafkaMessagingEvents.DELETE_PROFILE,
-    GET_PROFILE: KafkaMessagingEvents.GET_PROFILE,
-    GET_ALL_PROFILES: KafkaMessagingEvents.GET_ALL_PROFILES,
-    GET_PROFILE_BY_ID: KafkaMessagingEvents.GET_PROFILE_BY_ID,
-    GET_PROFILE_BY_EMAIL: KafkaMessagingEvents.GET_PROFILE_BY_EMAIL,
-    GET_PROFILE_BY_NATIONAL_CODE:
-      KafkaMessagingEvents.GET_PROFILE_BY_NATIONAL_CODE,
+    GET_USER: KafkaMessagingEvents.GET_USER,
     GET_USER_ROLES: KafkaMessagingEvents.GET_USER_ROLES,
+    REGISTERED_USER: KafkaMessagingEvents.REGISTERED_USER,
   } as const;
 }

@@ -39,7 +39,8 @@
       "@chats/*": ["src/v1/chats/*"],
       "@messages/*": ["src/v1/messages/*"],
       "@swagger/*": ["src/common/swagger/*"],
-      "@guards/*": ["src/common/guards/*"]
+      "@guards/*": ["src/common/guards/*"],
+      "@interfaces/*": ["src/common/interfaces/*"]
     }
   }
 }

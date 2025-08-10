@@ -4,12 +4,12 @@
   
   <img src="https://nestjs.com/img/logo-small.svg" width="150" alt="Nest Logo" />
 
-  ### Built with NestJS - The Progressive Node.js Framework
+### Built with NestJS - The Progressive Node.js Framework
 
-  [![NestJS Version](https://img.shields.io/npm/v/@nestjs/core.svg?style=flat-square&label=NestJS&color=ea2845)](https://www.npmjs.com/~nestjscore)
-  [![License](https://img.shields.io/npm/l/@nestjs/core.svg?style=flat-square&color=blue)](https://www.npmjs.com/~nestjscore)
-  [![Downloads](https://img.shields.io/npm/dm/@nestjs/common.svg?style=flat-square&color=purple)](https://www.npmjs.com/~nestjscore)
-  [![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289da.svg?style=flat-square&logo=discord)](https://discord.gg/G7Qnnhy)
+[![NestJS Version](https://img.shields.io/npm/v/@nestjs/core.svg?style=flat-square&label=NestJS&color=ea2845)](https://www.npmjs.com/~nestjscore)
+[![License](https://img.shields.io/npm/l/@nestjs/core.svg?style=flat-square&color=blue)](https://www.npmjs.com/~nestjscore)
+[![Downloads](https://img.shields.io/npm/dm/@nestjs/common.svg?style=flat-square&color=purple)](https://www.npmjs.com/~nestjscore)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289da.svg?style=flat-square&logo=discord)](https://discord.gg/G7Qnnhy)
 
 </div>
 
@@ -66,3 +66,13 @@ Love this project? Consider [becoming a sponsor](https://docs.nestjs.com/support
 ## 📝 License
 
 [MIT Licensed](LICENSE) © 2024 Backend Starter Kit
+
+---
+
+## 💬 Realtime AI Chat (Socket.IO)
+
+برای مستندات کامل فرانت‌اند و قرارداد رویدادها به این فایل‌ها مراجعه کنید:
+
+- `src/v1/chats/docs/overview.md`
+- `src/v1/chats/docs/events.md`
+- `src/v1/chats/docs/nextjs-example.md`

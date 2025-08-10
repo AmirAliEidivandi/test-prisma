@@ -1,4 +1,4 @@
-import { createParamDecorator } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { UserUtil } from '@utils/user.util';
 
@@ -9,7 +9,7 @@ export function setModuleRef(moduleRef: ModuleRef) {
 }
 
 export const GetUser = createParamDecorator(
-  async (data, context): Promise<User> => {
+  async (data, context: ExecutionContext): Promise<User> => {
     const req = context.switchToHttp().getRequest();
     const user = req.user;
 
