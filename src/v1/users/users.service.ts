@@ -13,14 +13,14 @@ export class UsersService {
   ) {}
 
   async registeredUser(payload: string) {
-    const { kid, profileId } = decrypt(payload) as {
+    const { kid, profile_id } = decrypt(payload) as {
       kid: string;
-      profileId: string;
+      profile_id: string;
     };
     await this.prisma.user.create({
       data: {
         kid,
-        profileId,
+        profile_id,
       },
     });
   }
@@ -35,8 +35,9 @@ export class UsersService {
       throw UserException.notFound(findUser.id);
     }
     const profile = await this.profileKafkaService.findOneProfile(
-      findUser.profileId,
-      ['first_name', 'last_name', 'email', 'username'],
+      findUser.profile_id,
+      // ['first_name', 'last_name', 'email', 'username'],
+      ['*'],
     );
     const userResponse: UserResponseDto = {
       ...findUser,

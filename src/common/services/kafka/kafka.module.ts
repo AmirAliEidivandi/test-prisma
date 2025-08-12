@@ -15,6 +15,11 @@ const clients = [
     clientId: KafkaServiceConstants.TEST_PRISMA_CLIENT_ID,
     groupId: KafkaServiceConstants.TEST_PRISMA_GROUP_ID,
   },
+  {
+    name: KafkaServiceConstants.PAY_SERVICE_NAME,
+    clientId: KafkaServiceConstants.PAY_CLIENT_ID,
+    groupId: KafkaServiceConstants.PAY_GROUP_ID,
+  },
 ];
 
 const items = [

@@ -9,6 +9,10 @@ export namespace KafkaServiceConstants {
   export const PROFILE_CLIENT_ID = 'profile';
   export const PROFILE_GROUP_ID = 'profile_consumer_profile';
 
+  export const PAY_SERVICE_NAME = 'PAY_SERVICE';
+  export const PAY_CLIENT_ID = 'pay';
+  export const PAY_GROUP_ID = 'pay_consumer';
+
   export const CLIENT_OPTIONS = {
     enforceRequestTimeout: false,
     retry: {

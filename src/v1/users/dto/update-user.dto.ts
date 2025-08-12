@@ -4,15 +4,15 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString({ message: 'validation.constraints.isString' })
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
-  firstName?: string;
+  first_name?: string;
 
   @IsOptional()
   @IsString({ message: 'validation.constraints.isString' })
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
-  lastName?: string;
+  last_name?: string;
 
   @IsOptional()
   @IsString({ message: 'validation.constraints.isString' })
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
-  jobPosition?: string;
+  job_position?: string;
 }

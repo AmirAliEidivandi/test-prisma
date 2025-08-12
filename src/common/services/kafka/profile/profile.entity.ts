@@ -8,9 +8,11 @@ export class Profile {
   email?: string;
   national_code?: string;
   birth_date?: string;
-  mobile?: string;
-  mobile_prefix?: string;
-  mobile_country_code?: string;
+  mobile?: {
+    prefix?: string;
+    mobile_number?: string;
+    country_code?: string;
+  };
   mobile_verified?: boolean;
   enabled?: boolean;
   gender?: string;

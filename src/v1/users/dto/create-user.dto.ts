@@ -19,7 +19,7 @@ export class CreateUserDto {
     required: true,
     type: String,
   })
-  firstName: string;
+  first_name: string;
 
   @IsString({ message: 'validation.constraints.isString' })
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
@@ -29,7 +29,7 @@ export class CreateUserDto {
     required: true,
     type: String,
   })
-  lastName: string;
+  last_name: string;
 
   @IsString({ message: 'validation.constraints.isString' })
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
@@ -39,7 +39,7 @@ export class CreateUserDto {
     required: true,
     type: String,
   })
-  nationalCode: string;
+  national_code: string;
 
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
   @IsEmail({}, { message: 'validation.constraints.isEmail' })
@@ -49,7 +49,7 @@ export class CreateUserDto {
     required: true,
     type: String,
   })
-  email: string;
+  email?: string;
 
   @IsString({ message: 'validation.constraints.isString' })
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
@@ -59,7 +59,7 @@ export class CreateUserDto {
     required: true,
     type: String,
   })
-  jobPosition: string;
+  job_position: string;
 
   @IsString({ message: 'validation.constraints.isString' })
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
@@ -73,7 +73,7 @@ export class CreateUserDto {
     required: true,
     type: String,
   })
-  phone: string;
+  phone?: string;
 
   @IsString({ message: 'validation.constraints.isString' })
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
@@ -83,7 +83,7 @@ export class CreateUserDto {
     required: true,
     type: String,
   })
-  address: string;
+  address?: string;
 
   @IsNotEmpty({ message: 'validation.constraints.isNotEmpty' })
   @IsDateString({}, { message: 'validation.constraints.isDateString' })
@@ -93,5 +93,5 @@ export class CreateUserDto {
     required: true,
     type: String,
   })
-  birthDate: string;
+  birth_date?: string;
 }

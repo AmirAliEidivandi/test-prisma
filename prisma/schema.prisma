@@ -20,11 +20,11 @@ enum MessageRole {
 
 model User {
   id               String       @id @default(uuid())
-  profileId        String       @map("profile_id")
+  profile_id        String       @map("profile_id")
   kid              String       @map("kid")
-  createdAt        DateTime     @default(now()) @map("created_at")
-  updatedAt        DateTime     @updatedAt @map("updated_at")
-  deletedAt        DateTime?    @map("deleted_at")
+  created_at        DateTime     @default(now()) @map("created_at")
+  updated_at        DateTime     @updatedAt @map("updated_at")
+  deleted_at        DateTime?    @map("deleted_at")
   chats            Chat[]
 }
 
@@ -32,11 +32,11 @@ model Chat {
   id               String    @id @default(uuid())
   title            String
   model            String
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
-  deletedAt        DateTime? @map("deleted_at")
-  userId           String    @map("user_id")
-  user             User      @relation(fields: [userId], references: [id])
+  created_at        DateTime  @default(now()) @map("created_at")
+  updated_at        DateTime  @updatedAt @map("updated_at")
+  deleted_at        DateTime? @map("deleted_at")
+  user_id           String    @map("user_id")
+  user             User      @relation(fields: [user_id], references: [id])
   messages         Message[]
 }
 
@@ -44,11 +44,11 @@ model Message {
   id               String    @id @default(uuid())
   content          String
   role             MessageRole
-  chatId           String    @map("chat_id")
-  chat             Chat      @relation(fields: [chatId], references: [id])
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
-  deletedAt        DateTime? @map("deleted_at")
+  chat_id           String    @map("chat_id")
+  chat             Chat      @relation(fields: [chat_id], references: [id])
+  created_at        DateTime  @default(now()) @map("created_at")
+  updated_at        DateTime  @updatedAt @map("updated_at")
+  deleted_at        DateTime? @map("deleted_at")
   order            Int
   metadata         Json?
 }

@@ -14,7 +14,6 @@ import {
 } from '@services/openai/openai.service';
 import { PrismaService } from '@services/prisma/prisma.service';
 import { Server, Socket } from 'socket.io';
-import { ChatsService } from './chats.service';
 
 @WebSocketGateway({
   namespace: 'chats',
@@ -27,7 +26,6 @@ export class ChatsGateway {
   server: Server;
 
   constructor(
-    private readonly chatsService: ChatsService,
     private readonly prisma: PrismaService,
     private readonly openai: OpenAiService,
   ) {}
@@ -39,22 +37,22 @@ export class ChatsGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody()
     payload: {
-      chatId?: string;
+      chat_id?: string;
       model: string;
       content: string;
       temperature?: number;
     },
   ) {
-    const { chatId, model, content, temperature } = payload;
+    const { chat_id, model, content, temperature } = payload;
     // 1) Persist user's message immediately and emit back so user sees it
     let chat = null as null | { id: string; model: string; title: string };
 
-    if (chatId) {
+    if (chat_id) {
       chat = await this.prisma.chat.findFirst({
         where: {
-          id: chatId,
-          deletedAt: null,
-          userId: (client as any).data.authUser.id,
+          id: chat_id,
+          deleted_at: null,
+          user_id: (client as any).data.authUser.id,
         },
         select: { id: true, model: true, title: true },
       });
@@ -72,7 +70,7 @@ export class ChatsGateway {
         select: { id: true, model: true, title: true },
       });
       client.emit('chat_created', {
-        chatId: chat.id,
+        chat_id: chat.id,
         title: chat.title,
         model,
       });
@@ -80,7 +78,7 @@ export class ChatsGateway {
 
     const message = await this.prisma.message.create({
       data: {
-        chatId: chat.id,
+        chat_id: chat.id,
         role: MessageRole.USER,
         content,
         order: await this.nextOrder(chat.id),
@@ -89,8 +87,8 @@ export class ChatsGateway {
         id: true,
         content: true,
         role: true,
-        createdAt: true,
-        chatId: true,
+        created_at: true,
+        chat_id: true,
       },
     });
 
@@ -99,8 +97,8 @@ export class ChatsGateway {
 
     // 2) Stream assistant response via OpenAI
     const history = await this.prisma.message.findMany({
-      where: { chatId: chat.id, deletedAt: null },
-      orderBy: { createdAt: 'asc' },
+      where: { chat_id: chat.id, deleted_at: null },
+      orderBy: { created_at: 'asc' },
       select: { role: true, content: true },
     });
 
@@ -121,19 +119,19 @@ export class ChatsGateway {
           // Notify client that streaming is starting
           this.server
             .to(client.id)
-            .emit('assistant_typing', { chatId: chat.id });
+            .emit('assistant_typing', { chat_id: chat.id });
         },
         onDelta: (delta) => {
           fullText += delta;
           this.server.to(client.id).emit('assistant_delta', {
-            chatId: chat.id,
+            chat_id: chat.id,
             delta,
           });
         },
         onComplete: async () => {
           const saved = await this.prisma.message.create({
             data: {
-              chatId: chat.id,
+              chat_id: chat.id,
               role: MessageRole.ASSISTANT,
               content: fullText,
               order: await this.nextOrder(chat.id),
@@ -142,8 +140,8 @@ export class ChatsGateway {
               id: true,
               content: true,
               role: true,
-              createdAt: true,
-              chatId: true,
+              created_at: true,
+              chat_id: true,
             },
           });
           assistantMessageId = saved.id;
@@ -153,23 +151,23 @@ export class ChatsGateway {
         },
         onError: (error) => {
           this.server.to(client.id).emit('assistant_error', {
-            chatId: chat?.id,
+            chat_id: chat?.id,
             error: (error as any)?.message || 'AI error',
           });
         },
       },
     });
 
-    return { ok: true, chatId: chat.id, assistantMessageId };
+    return { ok: true, chat_id: chat.id, assistantMessageId };
   }
 
   @SubscribeMessage('list_messages')
   @UseGuards(WsAuthGuard)
   async onListMessages(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { chatId: string; page?: number; limit?: number },
+    @MessageBody() payload: { chat_id: string; page?: number; limit?: number },
   ) {
-    const { chatId } = payload;
+    const { chat_id } = payload;
     const page = Number.isInteger(payload?.page) ? (payload.page as number) : 0;
     const limit = Number.isInteger(payload?.limit)
       ? (payload.limit as number)
@@ -177,9 +175,9 @@ export class ChatsGateway {
     const skip = page * limit;
     const ownership = await this.prisma.chat.findFirst({
       where: {
-        id: chatId,
-        userId: (client as any).data.authUser.id,
-        deletedAt: null,
+        id: chat_id,
+        user_id: (client as any).data.authUser.id,
+        deleted_at: null,
       },
       select: { id: true },
     });
@@ -191,23 +189,23 @@ export class ChatsGateway {
         limit,
         'Messages listed',
       );
-      this.server.to(client.id).emit('messages_list', { chatId, ...empty });
-      return { chatId, count: 0 };
+      this.server.to(client.id).emit('messages_list', { chat_id, ...empty });
+      return { chat_id, count: 0 };
     }
     const totalCount = await this.prisma.message.count({
-      where: { chatId, deletedAt: null },
+      where: { chat_id, deleted_at: null },
     });
     const messages = await this.prisma.message.findMany({
-      where: { chatId, deletedAt: null },
-      orderBy: { createdAt: 'asc' },
+      where: { chat_id, deleted_at: null },
+      orderBy: { created_at: 'asc' },
       skip,
       take: limit,
       select: {
         id: true,
         content: true,
         role: true,
-        createdAt: true,
-        chatId: true,
+        created_at: true,
+        chat_id: true,
       },
     });
     const envelope = this.buildPaginatedEnvelope(
@@ -217,8 +215,8 @@ export class ChatsGateway {
       limit,
       'Messages listed',
     );
-    this.server.to(client.id).emit('messages_list', { chatId, ...envelope });
-    return { chatId, count: messages.length };
+    this.server.to(client.id).emit('messages_list', { chat_id, ...envelope });
+    return { chat_id, count: messages.length };
   }
 
   @SubscribeMessage('list_chats')
@@ -235,19 +233,19 @@ export class ChatsGateway {
       ? (payload?.limit as number)
       : 20;
     const skip = page * limit;
-    const where = { userId, deletedAt: null } as const;
+    const where = { user_id: userId, deleted_at: null } as const;
     const totalCount = await this.prisma.chat.count({ where });
     const chats = await this.prisma.chat.findMany({
       where,
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { updated_at: 'desc' },
       skip,
       take: limit,
       select: {
         id: true,
         title: true,
         model: true,
-        createdAt: true,
-        updatedAt: true,
+        created_at: true,
+        updated_at: true,
       },
     });
     const envelope = this.buildPaginatedEnvelope(
@@ -263,7 +261,7 @@ export class ChatsGateway {
 
   private async nextOrder(chatId: string): Promise<number> {
     const last = await this.prisma.message.findFirst({
-      where: { chatId, deletedAt: null },
+      where: { chat_id: chatId, deleted_at: null },
       orderBy: { order: 'desc' },
       select: { order: true },
     });

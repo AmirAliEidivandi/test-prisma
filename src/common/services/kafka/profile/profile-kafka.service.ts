@@ -21,6 +21,26 @@ export class ProfileKafkaService {
     );
   }
 
+  private normalizeProfile(raw: any): Profile {
+    const {
+      mobile: mobileNumber,
+      mobile_prefix: prefix,
+      mobile_country_code: countryCode,
+      ...rest
+    } = raw ?? {};
+
+    const normalized: Profile = {
+      ...rest,
+      mobile: {
+        prefix,
+        mobile_number: mobileNumber,
+        country_code: countryCode,
+      },
+    };
+
+    return normalized;
+  }
+
   // createProfile(dto: CreateUserDto) {
   //   return new Promise<ProfileResponseDto>((resolve, reject) => {
   //     this.kafkaClient
@@ -73,7 +93,9 @@ export class ProfileKafkaService {
         .subscribe({
           next: (value) => {
             const response = decrypt(value) as ProfileResponse;
-            resolve(response.data[0]);
+            const rawProfile = response.data[0];
+            const normalized = this.normalizeProfile(rawProfile);
+            resolve(normalized);
           },
           error: (error) => reject(error),
         });
