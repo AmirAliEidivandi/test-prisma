@@ -2,12 +2,10 @@ import { KafkaServiceConstants } from '@constants/kafka.constants';
 import { Roles } from '@decorators/roles.decorator';
 import { GetUser } from '@decorators/user.decorator';
 import { KeycloakRoleEnum } from '@enums/keycloak-role-enum';
-import { RolesGuard } from '@guards/roles.guard';
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
 
-@UseGuards(RolesGuard)
 @Controller('v1/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
