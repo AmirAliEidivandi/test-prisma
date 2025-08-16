@@ -7,7 +7,7 @@ import { io, Socket } from 'socket.io-client';
 
 type Message = {
   id?: string;
-  chatId?: string;
+  chat_id?: string;
   content: string;
   role: 'USER' | 'ASSISTANT';
   createdAt?: string;

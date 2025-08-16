@@ -6,7 +6,7 @@ Client → Server
 
   ```json
   {
-    "chatId": "optional",
+    "chat_id": "optional",
     "model": "gpt-4o-mini",
     "content": "متن پیام کاربر",
     "temperature": 0.7
@@ -21,18 +21,18 @@ Client → Server
   ```
 - `list_messages` payload:
   ```json
-  { "chatId": "<CHAT_ID>", "page": 0, "limit": 20 }
+  { "chat_id": "<CHAT_ID>", "page": 0, "limit": 20 }
   ```
 
 Server → Client
 
-- `chat_created`: `{ chatId, title, model }`
+- `chat_created`: `{ chat_id, title, model }`
 - `message_created`: پیام ذخیره‌شده کاربر
-- `assistant_typing`: `{ chatId }` شروع استریم پاسخ
-- `assistant_delta`: `{ chatId, delta }` تکه‌های پاسخ AI
+- `assistant_typing`: `{ chat_id }` شروع استریم پاسخ
+- `assistant_delta`: `{ chat_id, delta }` تکه‌های پاسخ AI
 - `assistant_complete`: پیام کامل AI (پس از ذخیره)
-- `assistant_error`: `{ chatId, error }`
+- `assistant_error`: `{ chat_id, error }`
 - `chats_list`: پاسخ صفحه‌بندی‌شده شامل `data` (لیست چت‌ها) و `meta`
-- `messages_list`: پاسخ صفحه‌بندی‌شده شامل `data` (لیست پیام‌ها) و `meta` به‌همراه `chatId`
+- `messages_list`: پاسخ صفحه‌بندی‌شده شامل `data` (لیست پیام‌ها) و `meta` به‌همراه `chat_id`
 
 نکته: `role` یکی از `USER | ASSISTANT` است.
