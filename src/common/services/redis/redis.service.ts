@@ -32,4 +32,24 @@ export class RedisService {
   async delUserRoles(profileId: string) {
     await this.del(profileId);
   }
+
+  // Anonymous usage tracking
+  private anonKey(anonId: string) {
+    return `anon:${anonId}:usage`;
+  }
+
+  async getAnonUsage(anonId: string): Promise<number> {
+    const val = await this.redisClient.get(this.anonKey(anonId));
+    return val ? Number(val) : 0;
+  }
+
+  async incrAnonUsage(anonId: string, ttlDays = 365): Promise<number> {
+    const key = this.anonKey(anonId);
+    const tx = this.redisClient.multi();
+    tx.incr(key);
+    tx.expire(key, ttlDays * 24 * 60 * 60);
+    const [, expireRes] = (await tx.exec()) as any[];
+    const current = await this.redisClient.get(key);
+    return current ? Number(current) : 0;
+  }
 }

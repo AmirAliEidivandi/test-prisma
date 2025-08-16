@@ -23,6 +23,7 @@ Client → Server
   ```json
   { "chat_id": "<CHAT_ID>", "page": 0, "limit": 20 }
   ```
+- `usage_info` بدون payload (برای دریافت سهمیه باقی‌مانده کاربر ناشناس)
 
 Server → Client
 
@@ -34,5 +35,6 @@ Server → Client
 - `assistant_error`: `{ chat_id, error }`
 - `chats_list`: پاسخ صفحه‌بندی‌شده شامل `data` (لیست چت‌ها) و `meta`
 - `messages_list`: پاسخ صفحه‌بندی‌شده شامل `data` (لیست پیام‌ها) و `meta` به‌همراه `chat_id`
+- `usage_info`: `{ used, limit, remaining, isAnonymous }`
 
 نکته: `role` یکی از `USER | ASSISTANT` است.

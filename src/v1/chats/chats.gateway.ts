@@ -1,4 +1,5 @@
 import { WsAuthGuard } from '@guards/ws-auth.guard';
+import { WsOptionalAuthGuard } from '@guards/ws-optional-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -13,6 +14,7 @@ import {
   OpenAiService,
 } from '@services/openai/openai.service';
 import { PrismaService } from '@services/prisma/prisma.service';
+import { RedisService } from '@services/redis/redis.service';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
@@ -28,11 +30,12 @@ export class ChatsGateway {
   constructor(
     private readonly prisma: PrismaService,
     private readonly openai: OpenAiService,
+    private readonly redis: RedisService,
   ) {}
 
   // Client emits 'send_message' with payload: { chatId?: string, model: string, content: string }
   @SubscribeMessage('send_message')
-  @UseGuards(WsAuthGuard)
+  @UseGuards(WsOptionalAuthGuard)
   async onSendMessage(
     @ConnectedSocket() client: Socket,
     @MessageBody()
@@ -44,6 +47,28 @@ export class ChatsGateway {
     },
   ) {
     const { chat_id, model, content, temperature } = payload;
+    const isAnonymous =
+      (client as any).data?.isAnonymous === true ||
+      !(client as any).data?.authUser;
+    let ownerUserId: string | null = null;
+    let anonId: string | null = null;
+    if (isAnonymous) {
+      anonId = this.getOrSetAnonId(client);
+      // Enforce total of 10 interactions (5 user + 5 ai)
+      const current = await this.redis.getAnonUsage(anonId);
+      if (current >= 10) {
+        this.server.to(client.id).emit('assistant_error', {
+          chat_id: chat_id || null,
+          error: 'Please login to continue. Free limit reached.',
+          code: 'ANON_LIMIT_REACHED',
+        });
+        return { ok: false, reason: 'ANON_LIMIT_REACHED' };
+      }
+      const anonUser = await this.getOrCreateAnonUser(anonId);
+      ownerUserId = anonUser.id;
+    } else {
+      ownerUserId = (client as any).data.authUser.id;
+    }
     // 1) Persist user's message immediately and emit back so user sees it
     let chat = null as null | { id: string; model: string; title: string };
 
@@ -52,7 +77,7 @@ export class ChatsGateway {
         where: {
           id: chat_id,
           deleted_at: null,
-          user_id: (client as any).data.authUser.id,
+          user_id: ownerUserId,
         },
         select: { id: true, model: true, title: true },
       });
@@ -65,7 +90,7 @@ export class ChatsGateway {
         data: {
           title,
           model,
-          user: { connect: { id: (client as any).data.authUser.id } },
+          user: { connect: { id: ownerUserId! } },
         },
         select: { id: true, model: true, title: true },
       });
@@ -91,6 +116,12 @@ export class ChatsGateway {
         chat_id: true,
       },
     });
+
+    // Increment usage for anonymous on user message
+    if (isAnonymous && anonId) {
+      await this.redis.incrAnonUsage(anonId);
+      await this.emitUsageInfo(client);
+    }
 
     // Emit user's message immediately
     this.server.to(client.id).emit('message_created', message);
@@ -144,6 +175,10 @@ export class ChatsGateway {
               chat_id: true,
             },
           });
+          if (isAnonymous && anonId) {
+            await this.redis.incrAnonUsage(anonId);
+            await this.emitUsageInfo(client);
+          }
           assistantMessageId = saved.id;
           this.server.to(client.id).emit('assistant_complete', {
             ...saved,
@@ -159,6 +194,14 @@ export class ChatsGateway {
     });
 
     return { ok: true, chat_id: chat.id, assistantMessageId };
+  }
+
+  @SubscribeMessage('usage_info')
+  @UseGuards(WsOptionalAuthGuard)
+  async onUsageInfo(@ConnectedSocket() client: Socket) {
+    const info = await this.computeUsageInfo(client);
+    this.server.to(client.id).emit('usage_info', info);
+    return info;
   }
 
   @SubscribeMessage('list_messages')
@@ -268,6 +311,46 @@ export class ChatsGateway {
     return (last?.order ?? 0) + 1;
   }
 
+  private getOrSetAnonId(client: Socket): string {
+    const headerId = (client.handshake.headers['x-anon-id'] as string) || '';
+    const cookieId = this.getCookie(client, 'anon_id');
+    const existing = headerId || cookieId;
+    if (existing) return existing;
+    const ip = (client.handshake.address || '').replace(/\W/g, '');
+    const ua = (
+      (client.handshake.headers['user-agent'] as string) || ''
+    ).replace(/\W/g, '');
+    return `fp_${ip}_${ua}`.slice(0, 120);
+  }
+
+  private getCookie(client: Socket, name: string): string | null {
+    const cookie = client.handshake.headers.cookie as string | undefined;
+    if (!cookie) return null;
+    const parts = cookie.split(';').map((c) => c.trim());
+    for (const p of parts) {
+      const [k, v] = p.split('=');
+      if (k === name) return decodeURIComponent(v);
+    }
+    return null;
+  }
+
+  private async getOrCreateAnonUser(anonId: string): Promise<{ id: string }> {
+    const kid = `ANON:${anonId}`;
+    const existing = await this.prisma.user.findFirst({
+      where: { kid, deleted_at: null },
+      select: { id: true },
+    });
+    if (existing) return existing;
+    const created = await this.prisma.user.create({
+      data: {
+        kid,
+        profile_id: `anon:${anonId}`,
+      },
+      select: { id: true },
+    });
+    return created;
+  }
+
   private buildPaginatedEnvelope<T>(
     items: T[],
     totalCount: number,
@@ -291,5 +374,29 @@ export class ChatsGateway {
       timestamp: new Date().toISOString(),
       statusCode: 200,
     };
+  }
+
+  private async computeUsageInfo(client: Socket): Promise<{
+    used: number;
+    limit: number | null;
+    remaining: number | null;
+    isAnonymous: boolean;
+  }> {
+    const isAnonymous =
+      (client as any).data?.isAnonymous === true ||
+      !(client as any).data?.authUser;
+    if (!isAnonymous) {
+      return { used: 0, limit: null, remaining: null, isAnonymous: false };
+    }
+    const anonId = this.getOrSetAnonId(client);
+    const used = await this.redis.getAnonUsage(anonId);
+    const limit = 10;
+    const remaining = Math.max(0, limit - used);
+    return { used, limit, remaining, isAnonymous: true };
+  }
+
+  private async emitUsageInfo(client: Socket) {
+    const info = await this.computeUsageInfo(client);
+    this.server.to(client.id).emit('usage_info', info);
   }
 }
