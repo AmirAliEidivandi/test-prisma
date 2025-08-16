@@ -2,7 +2,6 @@ import { ChatsModule } from '@chats/chats.module';
 import { KeycloakConfigModule } from '@config/keycloak/keycloak-config.module';
 import { KeycloakConfigService } from '@config/keycloak/keycloak-config.service';
 import { EnhancedExceptionFilter } from '@filter/enhanced-exception.filter';
-import { RolesLoaderGuard } from '@guards/roles-loader.guard';
 import { RolesGuard } from '@guards/roles.guard';
 import { HealthController } from '@health/health.controller';
 import { MessagesModule } from '@messages/messages.module';
@@ -89,7 +88,6 @@ import { AppService } from './app.service';
     { provide: APP_FILTER, useClass: EnhancedExceptionFilter },
     { provide: APP_GUARD, useClass: AuthGuard },
     UserRolesService,
-    { provide: APP_GUARD, useClass: RolesLoaderGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
 })

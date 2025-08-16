@@ -26,5 +26,7 @@ export namespace KafkaServiceConstants {
     GET_USER: KafkaMessagingEvents.GET_USER,
     GET_USER_ROLES: KafkaMessagingEvents.GET_USER_ROLES,
     REGISTERED_USER: KafkaMessagingEvents.REGISTERED_USER,
+    GET_USER_ROLES_BY_ALL_CLIENTS:
+      KafkaMessagingEvents.GET_USER_ROLES_BY_ALL_CLIENTS,
   } as const;
 }

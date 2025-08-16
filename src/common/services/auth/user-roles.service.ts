@@ -25,9 +25,8 @@ export class UserRolesService {
     } catch {}
 
     try {
-      const roles = await this.profileKafkaService.getUserRoles(
+      const roles = await this.profileKafkaService.getUserRolesByAllClients(
         user.preferred_username,
-        this.configService.get('KEYCLOAK_PRISMA_CLIENT'),
       );
 
       try {

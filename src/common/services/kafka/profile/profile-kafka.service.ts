@@ -19,6 +19,9 @@ export class ProfileKafkaService {
     this.kafkaClient.subscribeToResponseOf(
       KafkaServiceConstants.TOPICS.GET_USER,
     );
+    this.kafkaClient.subscribeToResponseOf(
+      KafkaServiceConstants.TOPICS.GET_USER_ROLES_BY_ALL_CLIENTS,
+    );
   }
 
   private normalizeProfile(raw: any): Profile {
@@ -135,8 +138,35 @@ export class ProfileKafkaService {
         )
         .subscribe({
           next: (value) => {
-            const response = decrypt(value) as string[];
-            resolve(response);
+            const data: any = decrypt(value);
+            const roles = Array.isArray(data)
+              ? data
+              : Array.isArray(data?.roles)
+                ? data.roles
+                : [];
+            resolve(roles);
+          },
+          error: (error) => reject(error),
+        });
+    });
+  }
+
+  async getUserRolesByAllClients(username: string) {
+    return new Promise<string[]>((resolve, reject) => {
+      this.kafkaClient
+        .send(
+          KafkaServiceConstants.TOPICS.GET_USER_ROLES_BY_ALL_CLIENTS,
+          encrypt({ username }),
+        )
+        .subscribe({
+          next: (value) => {
+            const data: any = decrypt(value);
+            const roles = Array.isArray(data)
+              ? data
+              : Array.isArray(data?.roles)
+                ? data.roles
+                : [];
+            resolve(roles);
           },
           error: (error) => reject(error),
         });
