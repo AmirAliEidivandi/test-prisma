@@ -2,6 +2,7 @@ import { KafkaServiceConstants } from '@constants/kafka.constants';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { WalletKafkaService } from './pay/wallet-kafka.service';
 import { ProfileKafkaService } from './profile/profile-kafka.service';
 
 const clients = [
@@ -55,7 +56,7 @@ const items = [
 @Global()
 @Module({
   imports: [ConfigModule, ...items],
-  providers: [ProfileKafkaService],
-  exports: [ProfileKafkaService, ...items],
+  providers: [ProfileKafkaService, WalletKafkaService],
+  exports: [ProfileKafkaService, WalletKafkaService, ...items],
 })
 export class KafkaModule {}

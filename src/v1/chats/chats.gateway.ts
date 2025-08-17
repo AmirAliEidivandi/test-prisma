@@ -1,3 +1,4 @@
+import { getPricing } from '@config/pricing/pricing.config';
 import { WsAuthGuard } from '@guards/ws-auth.guard';
 import { WsOptionalAuthGuard } from '@guards/ws-optional-auth.guard';
 import { UseGuards } from '@nestjs/common';
@@ -9,10 +10,12 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { MessageRole } from '@prisma/client';
+import { WalletKafkaService } from '@services/kafka/pay/wallet-kafka.service';
 import {
   ChatMessageForAI,
   OpenAiService,
 } from '@services/openai/openai.service';
+import { TokenizerService } from '@services/openai/tokenizer.service';
 import { PrismaService } from '@services/prisma/prisma.service';
 import { RedisService } from '@services/redis/redis.service';
 import { Server, Socket } from 'socket.io';
@@ -31,6 +34,8 @@ export class ChatsGateway {
     private readonly prisma: PrismaService,
     private readonly openai: OpenAiService,
     private readonly redis: RedisService,
+    private readonly walletKafka: WalletKafkaService,
+    private readonly tokenizer: TokenizerService,
   ) {}
 
   // Client emits 'send_message' with payload: { chatId?: string, model: string, content: string }
@@ -85,7 +90,7 @@ export class ChatsGateway {
 
     // Create chat if missing
     if (!chat) {
-      const title = this.openai.generateTitleFromPrompt(content);
+      const title = await this.openai.generateTitleFromPrompt(content);
       chat = await this.prisma.chat.create({
         data: {
           title,
@@ -126,7 +131,65 @@ export class ChatsGateway {
     // Emit user's message immediately
     this.server.to(client.id).emit('message_created', message);
 
-    // 2) Stream assistant response via OpenAI
+    // Debit #1: user tokens cost (authenticated users)
+    if (!isAnonymous) {
+      const pricing = getPricing(chat.model);
+      if (pricing?.user_token_cost_per_1k) {
+        const userTokens = this.tokenizer.countTokens(content);
+        const userCost = Math.ceil(
+          (userTokens * pricing.user_token_cost_per_1k) / 1000,
+        );
+        if (userCost > 0) {
+          try {
+            await this.walletKafka.debitWallet({
+              profile_id: (client as any).data.authUser.profile_id,
+              amount: userCost,
+              reason: 'AI_CHAT',
+              metadata: { chat_id: chat.id, userTokens, part: 'user' },
+            });
+          } catch (e) {}
+        }
+      }
+    }
+
+    // 2) Pre-check wallet balance (only for authenticated users)
+    if (!isAnonymous) {
+      const pricing = getPricing(chat.model);
+      // prehold assistant cost using default prehold tokens
+      const preholdTokens = Number(
+        process.env.PRICING_ASSISTANT_PREHOLD_TOKENS ?? 500,
+      );
+      const assistantPreCost =
+        Math.ceil(Math.max(1, preholdTokens) / 1000) *
+        (pricing?.assistant_token_cost_per_1k ?? 0);
+      const required = assistantPreCost;
+      try {
+        const wallet = await this.walletKafka.getWalletByProfileId(
+          (client as any).data.authUser.profile_id,
+        );
+        if (
+          !wallet ||
+          typeof wallet.balance !== 'number' ||
+          wallet.balance < required
+        ) {
+          this.server.to(client.id).emit('assistant_error', {
+            chat_id: chat.id,
+            error: 'Insufficient wallet balance',
+            code: 'INSUFFICIENT_BALANCE',
+          });
+          return { ok: false, reason: 'INSUFFICIENT_BALANCE' };
+        }
+      } catch (e) {
+        this.server.to(client.id).emit('assistant_error', {
+          chat_id: chat.id,
+          error: 'Wallet check failed',
+          code: 'WALLET_CHECK_FAILED',
+        });
+        return { ok: false, reason: 'WALLET_CHECK_FAILED' };
+      }
+    }
+
+    // 3) Stream assistant response via OpenAI
     const history = await this.prisma.message.findMany({
       where: { chat_id: chat.id, deleted_at: null },
       orderBy: { created_at: 'asc' },
@@ -178,6 +241,34 @@ export class ChatsGateway {
           if (isAnonymous && anonId) {
             await this.redis.incrAnonUsage(anonId);
             await this.emitUsageInfo(client);
+          }
+
+          // Debit #2: assistant tokens cost after completion
+          if (!isAnonymous) {
+            const pricing = getPricing(chat.model);
+            if (pricing) {
+              const assistantTokens = this.tokenizer.countTokens(fullText);
+              const assistantCost = Math.ceil(
+                (assistantTokens * (pricing.assistant_token_cost_per_1k ?? 0)) /
+                  1000,
+              );
+              if (assistantCost > 0) {
+                try {
+                  await this.walletKafka.debitWallet({
+                    profile_id: (client as any).data.authUser.profile_id,
+                    amount: assistantCost,
+                    reason: 'AI_CHAT',
+                    metadata: {
+                      chat_id: chat.id,
+                      assistantTokens,
+                      part: 'assistant',
+                    },
+                  });
+                } catch (e) {
+                  // Optional: emit warning
+                }
+              }
+            }
           }
           assistantMessageId = saved.id;
           this.server.to(client.id).emit('assistant_complete', {

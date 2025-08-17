@@ -30,3 +30,19 @@
 نمایش سهمیه باقی‌مانده:
 
 - رویداد `usage_info` را صدا بزنید یا منتظر ارسال خودکار آن پس از هر افزایش مصرف بمانید. پاسخ: `{ used, limit, remaining, isAnonymous }`.
+
+### Models & Pricing Configuration
+
+- لیست مدل‌ها از یک enum کوچک تأمین می‌شود: `src/common/enums/model.enum.ts`
+  - مدل‌های فعلی: `gpt-4o`, `gpt-4o-mini`, `gpt-4`, `o3`, `o1`
+- قیمت‌گذاری در `src/common/config/pricing/pricing.config.ts` تعریف شده است.
+  - `user_token_cost_per_1k`: هزینه هر 1000 توکن پیام کاربر
+  - `assistant_token_cost_per_1k`: هزینه هر 1000 توکن خروجی دستیار
+  - می‌توانید با ENV override کنید: مثلا `PRICE_GPT4O_USER_PER_1K`, `PRICE_GPT4O_ASSISTANT_PER_1K` و ...
+- Endpoint `GET /api/v1/chats/models` همین enum را به فرانت باز می‌گرداند.
+
+Debit کیف‌پول (فقط کاربران احراز هویت‌شده):
+
+- بعد از ذخیره پیام کاربر، دِبیت با reason: `AI_CHAT_USER_MESSAGE`
+- بعد از تکمیل پاسخ AI، دِبیت با reason: `AI_CHAT_ASSISTANT_OUTPUT` (با تخمین ساده توکن خروجی)
+  - این دِبیت‌ها از طریق Kafka به سرویس پرداخت ارسال می‌شوند.

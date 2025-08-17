@@ -59,11 +59,32 @@ export class OpenAiService {
     }
   }
 
-  generateTitleFromPrompt(prompt: string): string {
-    const cleaned = prompt.trim().replace(/\s+/g, ' ');
-    const words = cleaned.split(' ').slice(0, 8);
-    const title = words.join(' ');
-    return title.length > 0 ? this.capitalizeFirst(title) : 'New Chat';
+  // generateTitleFromPrompt(prompt: string): string {
+  //   const cleaned = prompt.trim().replace(/\s+/g, ' ');
+  //   const words = cleaned.split(' ').slice(0, 8);
+  //   const title = words.join(' ');
+  //   return title.length > 0 ? this.capitalizeFirst(title) : 'New Chat';
+  // }
+
+  async generateTitleFromPrompt(prompt: string) {
+    const response = await this.client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a helpful assistant that generates very short chat titles. Titles must be concise, maximum 5 words.',
+        },
+        {
+          role: 'user',
+          content: `Generate a short title for this chat message:\n\n"${prompt}"`,
+        },
+      ],
+      max_tokens: 15,
+      temperature: 0.2,
+    });
+    const title = response.choices[0].message.content?.trim() ?? 'New Chat';
+    return title.replace(/^"|"$/g, ''); // Remove double quotes if they exist
   }
 
   private capitalizeFirst(text: string): string {

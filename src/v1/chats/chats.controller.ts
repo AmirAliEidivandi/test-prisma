@@ -1,13 +1,16 @@
+import { AiModel } from '@enums/model.enum';
 import { Controller, Get, Query } from '@nestjs/common';
-import { OpenAiService } from '@services/openai/openai.service';
 
 @Controller('v1/chats')
 export class ChatsController {
-  constructor(private readonly openai: OpenAiService) {}
-
   @Get('models')
   async listModels(@Query('search') search?: string) {
-    const models = await this.openai.listModels({ search });
-    return { items: models };
+    // Replace remote list with curated enum
+    const curated = Object.values(AiModel)
+      .filter((id) =>
+        search ? id.toLowerCase().includes(search.toLowerCase()) : true,
+      )
+      .map((id) => ({ id }));
+    return { items: curated };
   }
 }

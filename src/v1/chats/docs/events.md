@@ -37,4 +37,10 @@ Server → Client
 - `messages_list`: پاسخ صفحه‌بندی‌شده شامل `data` (لیست پیام‌ها) و `meta` به‌همراه `chat_id`
 - `usage_info`: `{ used, limit, remaining, isAnonymous }`
 
+Costs & Billing (authenticated users only):
+
+- دو دِبیت انجام می‌شود:
+  - بلافاصله بعد از `message_created`: هزینه توکن‌های پیام کاربر بر اساس `user_token_cost_per_1k`
+  - بعد از `assistant_complete`: هزینه توکن‌های پاسخ دستیار بر اساس `assistant_token_cost_per_1k`
+
 نکته: `role` یکی از `USER | ASSISTANT` است.
