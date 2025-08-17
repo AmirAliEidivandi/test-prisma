@@ -145,6 +145,7 @@ export class ChatsGateway {
               profile_id: (client as any).data.authUser.profile_id,
               amount: userCost,
               reason: 'AI_CHAT',
+              currency: 'IRT',
               metadata: { chat_id: chat.id, userTokens, part: 'user' },
             });
           } catch (e) {}
@@ -258,6 +259,7 @@ export class ChatsGateway {
                     profile_id: (client as any).data.authUser.profile_id,
                     amount: assistantCost,
                     reason: 'AI_CHAT',
+                    currency: 'IRT',
                     metadata: {
                       chat_id: chat.id,
                       assistantTokens,
