@@ -1,0 +1,32 @@
+name: Run Backend with Tunnel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Start backend
+        run: |
+          nohup yarn start:dev > server.log 2>&1 &
+
+      - name: Install cloudflared
+        run: |
+          wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared-linux-amd64.deb
+
+      - name: Run Cloudflare Tunnel
+        run: cloudflared tunnel --url http://localhost:4301
