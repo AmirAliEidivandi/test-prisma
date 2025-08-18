@@ -13,6 +13,10 @@ export namespace KafkaServiceConstants {
   export const PAY_CLIENT_ID = 'pay';
   export const PAY_GROUP_ID = 'pay_consumer';
 
+  export const LOG_SERVICE_NAME = 'LOG_SERVICE';
+  export const LOG_CLIENT_ID = 'log';
+  export const LOG_GROUP_ID = 'log_consumer';
+
   export const CLIENT_OPTIONS = {
     enforceRequestTimeout: false,
     retry: {

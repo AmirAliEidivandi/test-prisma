@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { LogKafkaService } from '@services/kafka/log/log-kafka.service';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { I18nService } from 'nestjs-i18n';
 import { IExceptionResponse } from '../exceptions/base/base-exception.interface';
@@ -15,7 +16,10 @@ import { DomainException } from '../exceptions/base/domain-exception.abstract';
 export class EnhancedExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(EnhancedExceptionFilter.name);
 
-  constructor(private readonly i18n: I18nService) {}
+  constructor(
+    private readonly i18n: I18nService,
+    private readonly logKafka: LogKafkaService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -31,6 +35,28 @@ export class EnhancedExceptionFilter implements ExceptionFilter {
     });
 
     const exceptionResponse = this.handleException(exception, request);
+
+    // Emit to Kafka for centralized log collection
+    this.logKafka.emit({
+      service: 'test-prisma',
+      level: 'ERROR',
+      message: 'UNCAUGHT_EXCEPTION',
+      metadata: {
+        requestId:
+          (request as any)?.id || (request.headers as any)?.['x-request-id'],
+        method: request.method,
+        url: request.url,
+        ip:
+          (request as any)?.ip ||
+          (request.headers as any)?.['x-forwarded-for'] ||
+          (request as any)?.socket?.remoteAddress,
+      },
+      error: {
+        name: (exception as any)?.name ?? 'Error',
+        message: (exception as any)?.message ?? 'Unknown error',
+        stack: (exception as any)?.stack,
+      },
+    });
 
     response.status(exceptionResponse.statusCode).send(exceptionResponse);
   }

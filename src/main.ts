@@ -1,6 +1,5 @@
 import { KafkaServiceConstants } from '@constants/kafka.constants';
 import { EnhancedExceptionFilter } from '@filter/enhanced-exception.filter';
-import { LanguageInterceptor } from '@interceptors/language.interceptor';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -14,8 +13,8 @@ import { EnhancedValidationPipe } from '@pipes/enhanced-validation.pipe';
 import { registerValidationEnums } from '@utils/validation-enums';
 import helmet from 'helmet';
 import { logLevel } from 'kafkajs';
-import morgan from 'morgan';
 import { I18nService } from 'nestjs-i18n';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -25,6 +24,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
+    { bufferLogs: true },
   );
   const configService = app.get(ConfigService);
   const i18nService = app.get(I18nService);
@@ -50,7 +50,7 @@ async function bootstrap() {
   });
   app.startAllMicroservices();
 
-  app.use(morgan('dev'));
+  app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api');
   app.enableVersioning({
     type: VersioningType.URI,
@@ -90,8 +90,16 @@ async function bootstrap() {
     // origin: configService.get<string>('ORIGIN').split(' '),
     // credentials: true,
   });
-  app.useGlobalInterceptors(new LanguageInterceptor());
-  app.useGlobalFilters(new EnhancedExceptionFilter(app.get(I18nService)));
+  // Interceptors are provided globally via APP_INTERCEPTOR in AppModule
+  app.useGlobalFilters(
+    new EnhancedExceptionFilter(
+      app.get(I18nService),
+      app.get(
+        require('./common/services/kafka/log/log-kafka.service')
+          .LogKafkaService,
+      ),
+    ),
+  );
 
   // Create enhanced validation pipe with i18n support
   app.useGlobalPipes(new EnhancedValidationPipe(i18nService as any));
