@@ -1,4 +1,5 @@
 import { KafkaServiceConstants } from '@constants/kafka.constants';
+import fastifyStatic from '@fastify/static';
 import { EnhancedExceptionFilter } from '@filter/enhanced-exception.filter';
 import { LanguageInterceptor } from '@interceptors/language.interceptor';
 import { VersioningType } from '@nestjs/common';
@@ -16,6 +17,7 @@ import helmet from 'helmet';
 import { logLevel } from 'kafkajs';
 import morgan from 'morgan';
 import { I18nService } from 'nestjs-i18n';
+import { join } from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -95,7 +97,11 @@ async function bootstrap() {
 
   // Create enhanced validation pipe with i18n support
   app.useGlobalPipes(new EnhancedValidationPipe(i18nService as any));
+  app.register(fastifyStatic, {
+    root: join(__dirname, '..', 'public'),
+    prefix: '/public/',
+  });
   const port = configService.get<number>('PORT') || 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
