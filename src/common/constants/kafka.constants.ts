@@ -34,5 +34,6 @@ export namespace KafkaServiceConstants {
       KafkaMessagingEvents.GET_USER_ROLES_BY_ALL_CLIENTS,
     GET_WALLET_BY_PROFILE_ID: KafkaMessagingEvents.GET_WALLET_BY_PROFILE_ID,
     DEBIT_WALLET: KafkaMessagingEvents.DEBIT_WALLET,
+    ANONYMOUS_USER: KafkaMessagingEvents.ANONYMOUS_USER,
   } as const;
 }
