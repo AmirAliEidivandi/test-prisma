@@ -24,6 +24,14 @@ Client → Server
   { "chat_id": "<CHAT_ID>", "page": 0, "limit": 20 }
   ```
 - `usage_info` بدون payload (برای دریافت سهمیه باقی‌مانده کاربر ناشناس)
+- `regenerate` payload:
+  ```json
+  {
+    "chat_id": "<CHAT_ID>",
+    "assistant_message_id": "<MSG_ID>",
+    "temperature": 0.7
+  }
+  ```
 
 Server → Client
 
@@ -36,6 +44,8 @@ Server → Client
 - `chats_list`: پاسخ صفحه‌بندی‌شده شامل `data` (لیست چت‌ها) و `meta`
 - `messages_list`: پاسخ صفحه‌بندی‌شده شامل `data` (لیست پیام‌ها) و `meta` به‌همراه `chat_id`
 - `usage_info`: `{ used, limit, remaining, isAnonymous }`
+- `assistant_regenerating`: `{ chat_id, replace_of_message_id }`
+- `assistant_regenerated`: شیء پیام جدید دستیار به‌همراه `replace_of_message_id`
 
 Costs & Billing (authenticated users only):
 

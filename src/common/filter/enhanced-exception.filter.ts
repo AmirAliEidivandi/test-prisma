@@ -37,6 +37,26 @@ export class EnhancedExceptionFilter implements ExceptionFilter {
     const exceptionResponse = this.handleException(exception, request);
 
     // Emit to Kafka for centralized log collection
+    // Prepare headers with redaction
+    const headers = { ...(request.headers as any) } as Record<string, any>;
+    if (headers['authorization']) headers['authorization'] = '[REDACTED]';
+    if (headers['cookie']) headers['cookie'] = '[REDACTED]';
+    if (headers['set-cookie']) headers['set-cookie'] = '[REDACTED]';
+
+    // Resolve client IP
+    const xRealIp = (request.headers as any)?.['x-real-ip'] as
+      | string
+      | undefined;
+    const xForwardedFor = (request.headers as any)?.['x-forwarded-for'] as
+      | string
+      | undefined;
+    const fwdIp = xForwardedFor?.split(',')[0]?.trim();
+    const ip =
+      xRealIp ||
+      fwdIp ||
+      (request as any)?.ip ||
+      (request as any)?.socket?.remoteAddress;
+
     this.logKafka.emit({
       service: 'test-prisma',
       level: 'ERROR',
@@ -46,10 +66,12 @@ export class EnhancedExceptionFilter implements ExceptionFilter {
           (request as any)?.id || (request.headers as any)?.['x-request-id'],
         method: request.method,
         url: request.url,
-        ip:
-          (request as any)?.ip ||
-          (request.headers as any)?.['x-forwarded-for'] ||
-          (request as any)?.socket?.remoteAddress,
+        ip,
+        statusCode:
+          (response as any)?.statusCode ??
+          (response as any)?.raw?.statusCode ??
+          500,
+        headers,
       },
       error: {
         name: (exception as any)?.name ?? 'Error',

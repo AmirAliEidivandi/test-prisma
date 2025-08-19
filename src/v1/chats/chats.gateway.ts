@@ -59,9 +59,9 @@ export class ChatsGateway {
     let anonId: string | null = null;
     if (isAnonymous) {
       anonId = this.getOrSetAnonId(client);
-      // Enforce total of 10 interactions (5 user + 5 ai)
+      // Enforce total of 200 interactions (100 user + 100 ai)
       const current = await this.redis.getAnonUsage(anonId);
-      if (current >= 10) {
+      if (current >= 200) {
         this.server.to(client.id).emit('assistant_error', {
           chat_id: chat_id || null,
           error: 'Please login to continue. Free limit reached.',
@@ -295,6 +295,211 @@ export class ChatsGateway {
     const info = await this.computeUsageInfo(client);
     this.server.to(client.id).emit('usage_info', info);
     return info;
+  }
+
+  @SubscribeMessage('regenerate')
+  @UseGuards(WsOptionalAuthGuard)
+  async onRegenerate(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      chat_id: string;
+      assistant_message_id: string;
+      temperature?: number;
+      replace?: boolean;
+    },
+  ) {
+    const { chat_id, assistant_message_id, temperature } = payload;
+    const isAnonymous =
+      (client as any).data?.isAnonymous === true ||
+      !(client as any).data?.authUser;
+
+    // Resolve owner
+    let ownerUserId: string | null = null;
+    let anonId: string | null = null;
+    if (isAnonymous) {
+      anonId = this.getOrSetAnonId(client);
+      const current = await this.redis.getAnonUsage(anonId);
+      if (current >= 200) {
+        this.server.to(client.id).emit('assistant_error', {
+          chat_id,
+          error: 'Please login to continue. Free limit reached.',
+          code: 'ANON_LIMIT_REACHED',
+        });
+        return { ok: false, reason: 'ANON_LIMIT_REACHED' };
+      }
+      const anonUser = await this.getOrCreateAnonUser(anonId);
+      ownerUserId = anonUser.id;
+    } else {
+      ownerUserId = (client as any).data.authUser.id;
+    }
+
+    // Check chat ownership
+    const chat = await this.prisma.chat.findFirst({
+      where: { id: chat_id, deleted_at: null, user_id: ownerUserId },
+      select: { id: true, model: true },
+    });
+    if (!chat) {
+      this.server.to(client.id).emit('assistant_error', {
+        chat_id,
+        error: 'Chat not found or not accessible',
+        code: 'CHAT_NOT_FOUND',
+      });
+      return { ok: false, reason: 'CHAT_NOT_FOUND' };
+    }
+
+    // Target assistant message
+    const target = await this.prisma.message.findFirst({
+      where: {
+        id: assistant_message_id,
+        chat_id,
+        role: 'ASSISTANT',
+        deleted_at: null,
+      },
+      select: { id: true, created_at: true },
+    });
+    if (!target) {
+      this.server.to(client.id).emit('assistant_error', {
+        chat_id,
+        error: 'Assistant message not found',
+        code: 'MSG_NOT_FOUND',
+      });
+      return { ok: false, reason: 'MSG_NOT_FOUND' };
+    }
+
+    // Pre-check wallet (assistant prehold only)
+    if (!isAnonymous) {
+      const pricing = getPricing(chat.model);
+      const preholdTokens = Number(
+        process.env.PRICING_ASSISTANT_PREHOLD_TOKENS ?? 500,
+      );
+      const assistantPreCost =
+        Math.ceil(Math.max(1, preholdTokens) / 1000) *
+        (pricing?.assistant_token_cost_per_1k ?? 0);
+      try {
+        const wallet = await this.walletKafka.getWalletByProfileId(
+          (client as any).data.authUser.profile_id,
+        );
+        if (
+          !wallet ||
+          typeof wallet.balance !== 'number' ||
+          wallet.balance < assistantPreCost
+        ) {
+          this.server.to(client.id).emit('assistant_error', {
+            chat_id,
+            error: 'Insufficient wallet balance',
+            code: 'INSUFFICIENT_BALANCE',
+          });
+          return { ok: false, reason: 'INSUFFICIENT_BALANCE' };
+        }
+      } catch (e) {
+        this.server.to(client.id).emit('assistant_error', {
+          chat_id,
+          error: 'Wallet check failed',
+          code: 'WALLET_CHECK_FAILED',
+        });
+        return { ok: false, reason: 'WALLET_CHECK_FAILED' };
+      }
+    }
+
+    // Build history up to target (exclude the target assistant response)
+    const all = await this.prisma.message.findMany({
+      where: { chat_id, deleted_at: null },
+      orderBy: { created_at: 'asc' },
+      select: { id: true, role: true, content: true },
+    });
+    const idx = all.findIndex((m) => m.id === assistant_message_id);
+    const history = idx > -1 ? all.slice(0, idx) : all;
+    const mapped = history.map((m) => ({
+      role: m.role === 'USER' ? 'user' : 'assistant',
+      content: m.content,
+    }));
+
+    // Notify client
+    this.server.to(client.id).emit('assistant_regenerating', {
+      chat_id,
+      replace_of_message_id: assistant_message_id,
+    });
+
+    let fullText = '';
+    await this.openai.streamChatCompletion({
+      model: chat.model,
+      messages: mapped as ChatMessageForAI[],
+      temperature,
+      handler: {
+        onStart: () => {},
+        onDelta: (delta) => {
+          fullText += delta;
+          this.server.to(client.id).emit('assistant_delta', {
+            chat_id,
+            delta,
+            replace_of_message_id: assistant_message_id,
+          });
+        },
+        onComplete: async () => {
+          const saved = await this.prisma.message.create({
+            data: {
+              chat_id,
+              role: 'ASSISTANT',
+              content: fullText,
+              order: await this.nextOrder(chat_id),
+              metadata: { regenerated_from: assistant_message_id },
+            },
+            select: {
+              id: true,
+              content: true,
+              role: true,
+              created_at: true,
+              chat_id: true,
+            },
+          });
+
+          // Anonymous quota
+          if (isAnonymous && anonId) {
+            await this.redis.incrAnonUsage(anonId);
+            await this.emitUsageInfo(client);
+          }
+
+          // Debit assistant tokens
+          if (!isAnonymous) {
+            const pricing = getPricing(chat.model);
+            const assistantTokens = this.tokenizer.countTokens(fullText);
+            const assistantCost = Math.ceil(
+              (assistantTokens * (pricing?.assistant_token_cost_per_1k ?? 0)) /
+                1000,
+            );
+            if (assistantCost > 0) {
+              try {
+                await this.walletKafka.debitWallet({
+                  profile_id: (client as any).data.authUser.profile_id,
+                  amount: assistantCost,
+                  reason: 'AI_CHAT',
+                  metadata: {
+                    chat_id,
+                    assistantTokens,
+                    part: 'assistant_regenerate',
+                    replace_of_message_id: assistant_message_id,
+                  },
+                });
+              } catch (e) {}
+            }
+          }
+
+          this.server.to(client.id).emit('assistant_regenerated', {
+            ...saved,
+            replace_of_message_id: assistant_message_id,
+          });
+        },
+        onError: (error) => {
+          this.server.to(client.id).emit('assistant_error', {
+            chat_id,
+            error: (error as any)?.message || 'AI error',
+          });
+        },
+      },
+    });
+
+    return { ok: true };
   }
 
   @SubscribeMessage('list_messages')
