@@ -11,6 +11,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { I18nService } from 'nestjs-i18n';
 import { IExceptionResponse } from '../exceptions/base/base-exception.interface';
 import { DomainException } from '../exceptions/base/domain-exception.abstract';
+import { SentryExceptionCaptured } from '@sentry/nestjs';
 
 @Catch()
 export class EnhancedExceptionFilter implements ExceptionFilter {
@@ -21,6 +22,7 @@ export class EnhancedExceptionFilter implements ExceptionFilter {
     private readonly logKafka: LogKafkaService,
   ) {}
 
+  @SentryExceptionCaptured()
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();

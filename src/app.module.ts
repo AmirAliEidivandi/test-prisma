@@ -13,6 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { UserRolesService } from '@services/auth/user-roles.service';
 import { KafkaModule } from '@services/kafka/kafka.module';
 import { PrismaModule } from '@services/prisma/prisma.module';
@@ -34,6 +35,7 @@ import { AppService } from './app.service';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
@@ -124,6 +126,7 @@ import { AppService } from './app.service';
   controllers: [AppController, HealthController],
   providers: [
     AppService,
+    { provide: APP_FILTER, useClass: SentryGlobalFilter },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_FILTER, useClass: EnhancedExceptionFilter },
     { provide: APP_GUARD, useClass: AuthGuard },

@@ -74,27 +74,75 @@ export class ChatsGateway {
     } else {
       ownerUserId = (client as any).data.authUser.id;
     }
-    // 1) Persist user's message immediately and emit back so user sees it
-    let chat = null as null | { id: string; model: string; title: string };
-
+    // Pre-determine model to use
+    let chat = null as null | { id: string; model: string; title?: string };
+    let modelToUse = model;
     if (chat_id) {
-      chat = await this.prisma.chat.findFirst({
-        where: {
-          id: chat_id,
-          deleted_at: null,
-          user_id: ownerUserId,
-        },
-        select: { id: true, model: true, title: true },
+      const existing = await this.prisma.chat.findFirst({
+        where: { id: chat_id, deleted_at: null, user_id: ownerUserId },
+        select: { id: true, model: true },
       });
+      if (!existing) {
+        this.server.to(client.id).emit('assistant_error', {
+          chat_id: chat_id,
+          error: 'Chat not found or not accessible',
+          code: 'CHAT_NOT_FOUND',
+        });
+        return { ok: false, reason: 'CHAT_NOT_FOUND' };
+      }
+      chat = existing as any;
+      modelToUse = existing.model;
     }
 
-    // Create chat if missing
+    // 1) Pre-check wallet balance (only for authenticated users) BEFORE creating chat/message
+    if (!isAnonymous) {
+      const pricing = getPricing(modelToUse);
+      // cost for user tokens
+      const userTokens = this.tokenizer.countTokens(content);
+      const userCost = pricing?.user_token_cost_per_1k
+        ? Math.ceil((userTokens * pricing.user_token_cost_per_1k) / 1000)
+        : 0;
+      // prehold assistant cost using default prehold tokens
+      const preholdTokens = Number(
+        process.env.PRICING_ASSISTANT_PREHOLD_TOKENS ?? 500,
+      );
+      const assistantPreCost =
+        Math.ceil(Math.max(1, preholdTokens) / 1000) *
+        (pricing?.assistant_token_cost_per_1k ?? 0);
+      const required = userCost + assistantPreCost;
+      try {
+        const wallet = await this.walletKafka.getWalletByProfileId(
+          (client as any).data.authUser.profile_id,
+        );
+        if (
+          !wallet ||
+          typeof wallet.balance !== 'number' ||
+          wallet.balance < required
+        ) {
+          this.server.to(client.id).emit('assistant_error', {
+            chat_id: chat_id || null,
+            error: 'Insufficient wallet balance',
+            code: 'INSUFFICIENT_BALANCE',
+          });
+          return { ok: false, reason: 'INSUFFICIENT_BALANCE' };
+        }
+      } catch (e) {
+        this.server.to(client.id).emit('assistant_error', {
+          chat_id: chat_id || null,
+          error: 'Wallet check failed',
+          code: 'WALLET_CHECK_FAILED',
+        });
+        return { ok: false, reason: 'WALLET_CHECK_FAILED' };
+      }
+    }
+
+    // 2) Now create chat if missing (use heuristic local title to avoid AI cost)
     if (!chat) {
-      const title = await this.openai.generateTitleFromPrompt(content);
+      const title = this.generateHeuristicTitle(content);
       chat = await this.prisma.chat.create({
         data: {
           title,
-          model,
+          model: modelToUse,
           user: { connect: { id: ownerUserId! } },
         },
         select: { id: true, model: true, title: true },
@@ -102,7 +150,7 @@ export class ChatsGateway {
       client.emit('chat_created', {
         chat_id: chat.id,
         title: chat.title,
-        model,
+        model: modelToUse,
       });
     }
 
@@ -153,42 +201,7 @@ export class ChatsGateway {
       }
     }
 
-    // 2) Pre-check wallet balance (only for authenticated users)
-    if (!isAnonymous) {
-      const pricing = getPricing(chat.model);
-      // prehold assistant cost using default prehold tokens
-      const preholdTokens = Number(
-        process.env.PRICING_ASSISTANT_PREHOLD_TOKENS ?? 500,
-      );
-      const assistantPreCost =
-        Math.ceil(Math.max(1, preholdTokens) / 1000) *
-        (pricing?.assistant_token_cost_per_1k ?? 0);
-      const required = assistantPreCost;
-      try {
-        const wallet = await this.walletKafka.getWalletByProfileId(
-          (client as any).data.authUser.profile_id,
-        );
-        if (
-          !wallet ||
-          typeof wallet.balance !== 'number' ||
-          wallet.balance < required
-        ) {
-          this.server.to(client.id).emit('assistant_error', {
-            chat_id: chat.id,
-            error: 'Insufficient wallet balance',
-            code: 'INSUFFICIENT_BALANCE',
-          });
-          return { ok: false, reason: 'INSUFFICIENT_BALANCE' };
-        }
-      } catch (e) {
-        this.server.to(client.id).emit('assistant_error', {
-          chat_id: chat.id,
-          error: 'Wallet check failed',
-          code: 'WALLET_CHECK_FAILED',
-        });
-        return { ok: false, reason: 'WALLET_CHECK_FAILED' };
-      }
-    }
+    // (Wallet pre-check already done above)
 
     // 3) Stream assistant response via OpenAI
     const history = await this.prisma.message.findMany({
@@ -277,10 +290,27 @@ export class ChatsGateway {
             ...saved,
           });
         },
-        onError: (error) => {
+        onError: async (error) => {
+          const e: any = error || {};
+          // Rollback: remove the freshly created user message and chat if empty
+          try {
+            await this.prisma.message.delete({ where: { id: message.id } });
+            const remaining = await this.prisma.message.count({
+              where: { chat_id: chat!.id, deleted_at: null },
+            });
+            if (remaining === 0) {
+              await this.prisma.chat.update({
+                where: { id: chat!.id },
+                data: { deleted_at: new Date() as any },
+              });
+            }
+          } catch {}
           this.server.to(client.id).emit('assistant_error', {
             chat_id: chat?.id,
-            error: (error as any)?.message || 'AI error',
+            error: e.message || 'AI error',
+            provider: e.provider,
+            status: e.status,
+            code: e.code,
           });
         },
       },
@@ -491,9 +521,13 @@ export class ChatsGateway {
           });
         },
         onError: (error) => {
+          const e: any = error || {};
           this.server.to(client.id).emit('assistant_error', {
             chat_id,
-            error: (error as any)?.message || 'AI error',
+            error: e.message || 'AI error',
+            provider: e.provider,
+            status: e.status,
+            code: e.code,
           });
         },
       },
@@ -607,6 +641,14 @@ export class ChatsGateway {
       select: { order: true },
     });
     return (last?.order ?? 0) + 1;
+  }
+
+  private generateHeuristicTitle(prompt: string): string {
+    const cleaned = (prompt || '').trim().replace(/\s+/g, ' ');
+    if (!cleaned) return 'New Chat';
+    const words = cleaned.split(' ').slice(0, 6);
+    const title = words.join(' ');
+    return title.charAt(0).toUpperCase() + title.slice(1);
   }
 
   private getOrSetAnonId(client: Socket): string {

@@ -34,12 +34,13 @@
 ### Models & Pricing Configuration
 
 - لیست مدل‌ها از یک enum کوچک تأمین می‌شود: `src/common/enums/model.enum.ts`
-  - مدل‌های فعلی: `gpt-4o`, `gpt-4o-mini`, `gpt-4`, `o3`, `o1`
+  - مدل‌های فعلی (نمونه): `gpt-4o`, `gpt-4o-mini`, `gpt-4`, `o3`, `o1`, و مدل‌های DeepSeek (مثلاً: `deepseek-chat`)
 - قیمت‌گذاری در `src/common/config/pricing/pricing.config.ts` تعریف شده است.
   - `user_token_cost_per_1k`: هزینه هر 1000 توکن پیام کاربر
   - `assistant_token_cost_per_1k`: هزینه هر 1000 توکن خروجی دستیار
   - می‌توانید با ENV override کنید: مثلا `PRICE_GPT4O_USER_PER_1K`, `PRICE_GPT4O_ASSISTANT_PER_1K` و ...
 - Endpoint `GET /api/v1/chats/models` همین enum را به فرانت باز می‌گرداند.
+  - انتخاب مدل DeepSeek کافی است؛ سرویس به‌صورت خودکار به `api.deepseek.com` با `DEEPSEEK_API_KEY` سوییچ می‌کند.
 
 Debit کیف‌پول (فقط کاربران احراز هویت‌شده):
 

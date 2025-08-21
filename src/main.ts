@@ -1,3 +1,4 @@
+import './instrument';
 import { KafkaServiceConstants } from '@constants/kafka.constants';
 import { EnhancedExceptionFilter } from '@filter/enhanced-exception.filter';
 import { VersioningType } from '@nestjs/common';

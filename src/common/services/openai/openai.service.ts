@@ -16,15 +16,21 @@ export interface ChatMessageForAI {
 
 @Injectable()
 export class OpenAiService {
-  private readonly client: OpenAI;
+  private readonly openaiClient?: OpenAI;
+  private readonly deepseekClient?: OpenAI;
 
   constructor(private readonly configService: ConfigService) {
-    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-    if (!apiKey) {
-      // Intentionally not throwing here to keep app booting for non-AI flows
-      // Calls will fail later with a clear error if used without key
+    const openaiKey = this.configService.get<string>('OPENAI_API_KEY');
+    if (openaiKey) {
+      this.openaiClient = new OpenAI({ apiKey: openaiKey });
     }
-    this.client = new OpenAI({ apiKey });
+    const deepseekKey = this.configService.get<string>('DEEPSEEK_API_KEY');
+    if (deepseekKey) {
+      this.deepseekClient = new OpenAI({
+        apiKey: deepseekKey,
+        baseURL: 'https://api.deepseek.com',
+      } as any);
+    }
   }
 
   async streamChatCompletion(params: {
@@ -32,12 +38,14 @@ export class OpenAiService {
     messages: ChatMessageForAI[];
     temperature?: number;
     handler: StreamChunkHandler;
+    provider?: 'openai' | 'deepseek';
   }): Promise<void> {
-    const { model, messages, temperature, handler } = params;
+    const { model, messages, temperature, handler, provider } = params;
 
     try {
       handler.onStart?.();
-      const stream = await this.client.chat.completions.create({
+      const client = this.resolveClient(model, provider);
+      const stream = await client.chat.completions.create({
         model,
         messages,
         temperature: temperature ?? undefined,
@@ -53,8 +61,21 @@ export class OpenAiService {
         await handler.onDelta(delta);
       }
       await handler.onComplete(fullText);
-    } catch (error) {
-      if (handler.onError) await handler.onError(error);
+    } catch (error: any) {
+      const status =
+        error?.status || error?.response?.status || error?.statusCode;
+      const wantsDeepseek =
+        provider === 'deepseek' ||
+        (model && model.toLowerCase().includes('deepseek'));
+      const mapped = {
+        status,
+        provider: wantsDeepseek ? 'deepseek' : 'openai',
+        code: undefined as string | undefined,
+        message: error?.message || 'AI provider error',
+      };
+      if (status === 401) mapped.code = 'PROVIDER_UNAUTHORIZED';
+      if (status === 402) mapped.code = 'PROVIDER_INSUFFICIENT_CREDIT';
+      if (handler.onError) await handler.onError(mapped);
       else throw error;
     }
   }
@@ -67,7 +88,8 @@ export class OpenAiService {
   // }
 
   async generateTitleFromPrompt(prompt: string) {
-    const response = await this.client.chat.completions.create({
+    const client = this.resolveClient('gpt-4o-mini', 'openai');
+    const response = await client.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
@@ -94,7 +116,8 @@ export class OpenAiService {
   async listModels(params?: {
     search?: string;
   }): Promise<Array<{ id: string; created?: number; ownedBy?: string }>> {
-    const response = await this.client.models.list();
+    const client = this.resolveClient('gpt-4o-mini', 'openai');
+    const response = await client.models.list();
     let models = response.data.map((m: any) => ({
       id: m.id,
       created: m.created,
@@ -118,5 +141,19 @@ export class OpenAiService {
     });
 
     return models;
+  }
+  private resolveClient(
+    model?: string,
+    provider?: 'openai' | 'deepseek',
+  ): OpenAI {
+    const wantsDeepseek =
+      provider === 'deepseek' ||
+      (model && model.toLowerCase().includes('deepseek'));
+    if (wantsDeepseek) {
+      if (!this.deepseekClient) throw new Error('DeepSeek not configured');
+      return this.deepseekClient;
+    }
+    if (!this.openaiClient) throw new Error('OpenAI not configured');
+    return this.openaiClient;
   }
 }

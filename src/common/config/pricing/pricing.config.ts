@@ -54,6 +54,30 @@ export const PRICING: Record<AiModel, ModelPricing> = {
       process.env.PRICE_O1_ASSISTANT_PER_1K ?? 3,
     ),
   },
+  [AiModel.DEEPSEEK_R1]: {
+    user_token_cost_per_1k: Number(
+      process.env.PRICE_DEEPSEEK_R1_USER_PER_1K ?? 2,
+    ),
+    assistant_token_cost_per_1k: Number(
+      process.env.PRICE_DEEPSEEK_R1_ASSISTANT_PER_1K ?? 4,
+    ),
+  },
+  [AiModel.DEEPSEEK_CHAT]: {
+    user_token_cost_per_1k: Number(
+      process.env.PRICE_DEEPSEEK_CHAT_USER_PER_1K ?? 2,
+    ),
+    assistant_token_cost_per_1k: Number(
+      process.env.PRICE_DEEPSEEK_CHAT_ASSISTANT_PER_1K ?? 4,
+    ),
+  },
+  [AiModel.DEEPSEEK_REASONER]: {
+    user_token_cost_per_1k: Number(
+      process.env.PRICE_DEEPSEEK_REASONER_USER_PER_1K ?? 2,
+    ),
+    assistant_token_cost_per_1k: Number(
+      process.env.PRICE_DEEPSEEK_REASONER_ASSISTANT_PER_1K ?? 4,
+    ),
+  },
 };
 
 export function getPricing(model: string): ModelPricing | null {
