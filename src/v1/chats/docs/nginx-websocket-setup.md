@@ -10,12 +10,13 @@ Nginx config شما حالا WebSocket رو کاملاً support می‌کنه.
 
 ```javascript
 // اتصال از طریق nginx
-const socket = io('http://apit.aradgbk.com/ai-core', {
+const socket = io('http://apit.aradgbk.com/chats', {
   path: '/socket.io/',
   transports: ['websocket', 'polling'], // Fallback to polling
   auth: {
     token: 'your-jwt-token', // اختیاری برای anonymous users
   },
+  path: '/ai-core/socket.io',
 });
 
 // یا برای namespace مخصوص
